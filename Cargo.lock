@@ -844,6 +844,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "wl-css"
+version = "0.1.0"
+dependencies = [
+ "masterror",
+ "wl-core",
+ "wl-profile",
+]
+
+[[package]]
 name = "wl-html"
 version = "0.1.0"
 dependencies = [

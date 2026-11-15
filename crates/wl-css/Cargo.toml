@@ -1,0 +1,20 @@
+# SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com>
+# SPDX-License-Identifier: MIT
+
+[package]
+name = "wl-css"
+description = "Telegram widget CSS rules: span-precise scanner plus lightningcss oracle"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+wl-core.workspace = true
+wl-profile.workspace = true
+
+[dev-dependencies]
+masterror.workspace = true
+
+[lints]
+workspace = true

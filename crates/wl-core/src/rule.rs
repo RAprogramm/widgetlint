@@ -63,6 +63,7 @@ pub struct RuleMeta {
 const RULES_TOML: &str = concat!(
     include_str!("../../../ruleset/rules/size.toml"),
     include_str!("../../../ruleset/rules/html.toml"),
+    include_str!("../../../ruleset/rules/css.toml"),
 );
 
 /// Returns the registry of all known rules, parsed once.
