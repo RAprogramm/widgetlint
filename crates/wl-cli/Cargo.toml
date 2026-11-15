@@ -1,0 +1,25 @@
+# SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com>
+# SPDX-License-Identifier: MIT
+
+[package]
+name = "wl-cli"
+description = "Command line interface for widgetlint"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+version.workspace = true
+
+[[bin]]
+name = "widgetlint"
+path = "src/main.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+clap.workspace = true
+masterror.workspace = true
+serde_json.workspace = true
+wl-profile.workspace = true
+wl-size.workspace = true

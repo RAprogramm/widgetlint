@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com>
+# SPDX-License-Identifier: MIT
+
+[package]
+name = "wl-size"
+description = "Exact widget size engine: zlib level 9 counting and limit status"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+flate2.workspace = true
+# Direct dependency only to unify the `static` feature: force libz-sys to
+# build the vendored reference zlib instead of the system library, which is
+# zlib-ng on some distros and produces different bytes.
+libz-sys.workspace = true
+masterror.workspace = true
+wl-profile.workspace = true

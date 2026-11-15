@@ -1,0 +1,285 @@
+# SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# Widget profile 1, transcribed from https://core.telegram.org/bots/widgets.md
+# (Bot API 10.4, state as of 2026-11-15). Lists marked "in_partial" are known
+# to be incomplete in the source: unknown items there are informational only.
+
+profile = 1
+spec_snapshot = "sha256:pending"
+spec_url = "https://core.telegram.org/bots/widgets.md"
+
+[limits]
+html_bytes = 32768
+html_zlib9_bytes = 4096
+state_bytes = 1024
+request_data_bytes = 64
+answer_data_bytes = 1024
+css_rules = 400
+css_keyframes = 32
+dom_nodes = 2000
+attribute_units = 8192
+text_value_units = 32768
+text_document_units = 49152
+canvas_pixels = [2048, 2048]
+timers = 64
+handlers_per_event = 16
+heavy_elements = 16
+heavy_backdrop_filter = 2
+storage_bytes = 4096
+copy_text_units = 256
+url_chars = 256
+
+[html.out]
+form_controls = [
+  "input",
+  "select",
+  "textarea",
+  "option",
+  "optgroup",
+  "fieldset",
+  "legend",
+  "datalist",
+  "output",
+]
+media_embed = [
+  "audio",
+  "video",
+  "source",
+  "track",
+  "iframe",
+  "frame",
+  "object",
+  "embed",
+  "portal",
+  "fencedframe",
+  "dialog",
+  "progress",
+  "meter",
+]
+service = [
+  "link",
+  "meta",
+  "base",
+  "template",
+  "slot",
+  "math",
+  "ruby",
+  "rt",
+  "rp",
+  "bdi",
+  "bdo",
+]
+legacy = ["center", "font", "big", "tt", "strike", "nobr"]
+attrs = [
+  "contenteditable",
+  "draggable",
+  "tabindex",
+  "autofocus",
+  "accesskey",
+  "spellcheck",
+  "inputmode",
+  "enterkeyhint",
+  "autocapitalize",
+]
+
+[html.degrade]
+form = "block"
+label = "inline"
+
+[html.in_partial]
+elements = [
+  "div",
+  "span",
+  "p",
+  "br",
+  "hr",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6",
+  "header",
+  "footer",
+  "main",
+  "nav",
+  "section",
+  "article",
+  "aside",
+  "pre",
+  "blockquote",
+  "figure",
+  "figcaption",
+  "b",
+  "i",
+  "u",
+  "s",
+  "em",
+  "strong",
+  "small",
+  "mark",
+  "code",
+  "kbd",
+  "sub",
+  "sup",
+  "abbr",
+  "cite",
+  "q",
+  "del",
+  "ins",
+  "time",
+  "ul",
+  "ol",
+  "li",
+  "dl",
+  "dt",
+  "dd",
+  "menu",
+  "table",
+  "details",
+  "summary",
+  "img",
+  "canvas",
+  "button",
+  "a",
+]
+
+[css.out]
+units_height = ["vh", "dvh", "svh", "lvh", "vb"]
+overflow_to_hidden = ["auto", "scroll"]
+position_to_relative = ["sticky"]
+color_functions = [
+  "oklch",
+  "oklab",
+  "lab",
+  "lch",
+  "hwb",
+  "color",
+  "color-mix",
+]
+filter_functions_allowed = ["blur", "brightness", "drop-shadow"]
+backdrop_filter_allowed = ["blur", "brightness"]
+at_rules = [
+  "font-face",
+  "import",
+  "namespace",
+  "container",
+  "layer",
+  "property",
+  "counter-style",
+  "starting-style",
+  "scope",
+  "page",
+  "font-feature-values",
+  "font-palette-values",
+  "position-try",
+]
+selectors = [
+  ":has",
+  ":focus",
+  ":focus-visible",
+  ":focus-within",
+  "::first-letter",
+  "::first-line",
+  "::marker",
+  ":target",
+  ":checked",
+  ":valid",
+  ":invalid",
+  ":placeholder-shown",
+  "::placeholder",
+  ":host",
+  ":host-context",
+  "::slotted",
+  "::part",
+  ":scope",
+]
+media_unsupported = ["hover", "pointer", "resolution", "print"]
+font_generics_allowed = [
+  "system-ui",
+  "sans-serif",
+  "serif",
+  "monospace",
+  "ui-sans-serif",
+  "ui-serif",
+  "ui-monospace",
+  "ui-rounded",
+]
+
+[js.out]
+network = [
+  "fetch",
+  "XMLHttpRequest",
+  "WebSocket",
+  "EventSource",
+  "RTCPeerConnection",
+  "sendBeacon",
+  "importScripts",
+  "Worker",
+  "BroadcastChannel",
+]
+dialogs = ["alert", "confirm", "prompt", "print"]
+navigator = [
+  "clipboard",
+  "share",
+  "vibrate",
+  "geolocation",
+  "mediaDevices",
+  "Notification",
+]
+misc = [
+  "attachShadow",
+  "customElements",
+  "Blob",
+  "FileReader",
+  "createObjectURL",
+  "requestFullscreen",
+]
+canvas_methods = [
+  "getImageData",
+  "putImageData",
+  "createImageData",
+  "toDataURL",
+  "toBlob",
+  "captureStream",
+  "createPattern",
+  "createConicGradient",
+]
+canvas_props = [
+  "shadowBlur",
+  "shadowColor",
+  "shadowOffsetX",
+  "shadowOffsetY",
+  "globalCompositeOperation",
+  "filter",
+]
+events = [
+  "touchstart",
+  "touchmove",
+  "touchend",
+  "keydown",
+  "keyup",
+  "keypress",
+  "beforeinput",
+  "input",
+  "wheel",
+  "scroll",
+]
+
+[js.privileged_calls]
+list = [
+  "TelegramWidget.request",
+  "TelegramWidget.openLink",
+  "TelegramWidget.openTelegramLink",
+  "TelegramWidget.copyText",
+  "TelegramWidget.wallet.sendTransaction",
+  "TelegramWidget.wallet.signData",
+]
+
+[gestures]
+long_press_ms = 500
+long_press_tolerance_px = 10
+double_tap_ms = 300
+double_tap_px = 40
+leading_unclaimable_px = 20

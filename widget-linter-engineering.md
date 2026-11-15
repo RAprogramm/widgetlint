@@ -57,6 +57,7 @@
 ### 2.1. Тулчейн
 
 - `rust-toolchain.toml` фиксирует канал (`stable`) и компоненты (`rustfmt`, `clippy`, `llvm-tools-preview`), а также цели (`wasm32-unknown-unknown`).
+- Форматирование — отдельным nightly-тулчейном: `cargo +nightly fmt` (стабильный канал остаётся каналом сборки; конфиг `rustfmt.toml` использует unstable-опции).
 - **Edition 2024.**
 - **MSRV** задаётся в `workspace.package.rust-version` и проверяется в CI (`cargo-msrv` или job с этой версией). Политика: MSRV не новее, чем «stable минус N версий»; повышение MSRV — отдельное изменение в changelog (для libs — minor-релиз).
 - `Cargo.lock` **коммитится** (в workspace есть бинари и оболочки).
@@ -108,8 +109,8 @@
 
 ### 3.1. Форматирование и lints
 
-- `rustfmt` с конфигом из репозитория; запрет форматирования вручную. В CI: `cargo fmt --check`.
-- `clippy` в CI с `-D warnings`.
+- `rustfmt` на nightly с конфигом из репозитория (конфиг использует unstable-опции); запрет форматирования вручную. В CI: `cargo +nightly fmt --all --check`.
+- `clippy` в CI с `-D warnings`, группы `pedantic` и `nursery` — предупреждениями (повышаются `-D warnings`), точечные разрешения — только с комментарием причины.
 - Набор lints (см. приложение A): `clippy::pedantic` как предупреждения с точечными разрешениями; для библиотечных крейтов — **запрет** `unwrap_used`, `expect_used`, `panic`, `indexing_slicing`, `todo`, `unimplemented`, `dbg_macro`, `print_stdout`, `print_stderr`; предупреждения `cast_possible_truncation` и `cast_sign_loss` (важно из-за `u32`-смещений); `missing_docs` для публичного API.
 - `unwrap`/`expect` допустимы **только** в тестах, бенчмарках и `build.rs`, и в `main` бинарей — с осмысленным сообщением.
 
@@ -168,7 +169,7 @@ pub enum Confidence { Heuristic, Likely, Certain }
 
 ### 4.2. Реализация
 
-- В библиотеках — `thiserror` (типизированные ошибки). В бинарях — `miette` (красивые отчёты) или `anyhow`.
+- Ошибки — только `masterror` (`AppError`, `AppErrorKind`, `AppResult`, `ensure!`/`fail!`). Доменные ошибки — `derive(masterror::Error)` с `#[app_error]`: типизированные `Display` и `From` в `AppError` генерируются макросом. Никаких `thiserror`, `anyhow`, `miette`.
 - Ядро возвращает `Result`; нигде нет `unwrap` на данных пользователя. Для индексирования — `get()`, `split_at_checked`, итераторы; не `slice[i]`.
 - Арифметика на пользовательских размерах — `checked_*`/`saturating_*`; в release включены `overflow-checks = true` для ядра (цена мала, выигрыш — отсутствие тихих переполнений).
 - Рекурсия по недоверенному вводу (вложенные теги, скобки) — **с ограничением глубины**, либо итеративно с явным стеком. Переполнение стека — это падение процесса.
@@ -321,6 +322,7 @@ impl Cx<'_> {
 - Использовать один экземпляр компрессора и `reset()` между прогонами (в `flate2` — `Compress::reset`), заранее выделить выходной буфер на `compress_bound`; не создавать компрессор на каждый вызов.
 - Разбивка требует N+1 прогонов (N — число частей, порядка 5): при 32 КБ это миллисекунды; **не распараллеливать** — накладные расходы потоков больше выигрыша. Если замер покажет иное — решать по данным.
 - Результат сжатия кэшируется в рамках одного вызова: `C(целое)` вычисляется один раз и используется всеми правилами и разбивкой.
+- Системный zlib некоторых дистрибутивов — zlib-ng в совместимом режиме (например, Arch): его вывод отличается от эталонного zlib. Сборка обязана линковать настоящий zlib (vendored-сборка `libz-sys`); паритет-тест (раздел 12.7) это и проверяет.
 
 ### 8.6. Вывод
 
@@ -453,7 +455,7 @@ impl Cx<'_> {
 
 ### 12.7. Паритет zlib
 
-Скрипт сравнивает счётчик Rust с `zlib.compress(data, 9)` Python на корпусе ≥ 500 файлов (пустой, 1 байт, границы 4096/32768, случайные данные, повторяющиеся блоки). Скрипт **печатает реализацию zlib** и отказывается работать на zlib-ng.
+Скрипт сравнивает счётчик Rust с `zlib.compress(data, 9)` Python на корпусе ≥ 500 файлов (пустой, 1 байт, границы 4096/32768, случайные данные, повторяющиеся блоки). Скрипт **печатает реализацию zlib** и отказывается работать на zlib-ng. На машине, где системный Python собран с zlib-ng (Arch и подобные), эталон запускают на настоящем zlib — например, `uv run --python 3.12 tools/zlib_parity.py`.
 
 ### 12.8. Организация тестов
 
@@ -467,8 +469,8 @@ impl Cx<'_> {
 
 ### 13.1. Проверки на каждый PR (блокирующие)
 
-1. `cargo fmt --check`
-2. `cargo clippy --workspace --all-targets --all-features -- -D warnings`
+1. `cargo +nightly fmt --all --check`
+2. `cargo clippy --workspace --all-targets --all-features -- -D warnings -W clippy::pedantic -W clippy::nursery`
 3. `cargo nextest run --workspace` (+ `cargo test --doc`)
 4. `cargo hack check --feature-powerset` (для крейтов с feature-флагами; в ограниченном виде, чтобы не взрывать время)
 5. `cargo doc --no-deps` с `RUSTDOCFLAGS="-D warnings"`
@@ -498,7 +500,7 @@ Linux/macOS/Windows × stable + MSRV (для ядра); отдельные за�
 
 ### 13.5. Релизы
 
-- **Семантическое версионирование** и **Conventional Commits** (`feat:`, `fix:`, `perf:`, `refactor:`, `docs:`, `test:`, `chore:`, `BREAKING CHANGE:`); changelog генерируется автоматически (`release-plz` или `cargo-release`).
+- **Семантическое версионирование** и коммиты формата `#<issue> type: description` (типы: `feat`, `fix`, `perf`, `refactor`, `docs`, `test`, `chore`; breaking change — `BREAKING CHANGE:` в теле); changelog генерируется автоматически (`release-plz` или `cargo-release`).
 - Один тег — одна версия во всех пакетах (crates.io, npm, PyPI, бинарники).
 - Бинарные релизы CLI — `cargo-dist` (установщики, архивы, контрольные суммы).
 - Колёса Python — `maturin` (GitHub Action), **trusted publishing** по OIDC без долгоживущих токенов.
@@ -510,7 +512,8 @@ Linux/macOS/Windows × stable + MSRV (для ядра); отдельные за�
 ### 13.6. Политика ветвления
 
 - `main` защищён: слияние только через PR с зелёным CI и минимум одним ревью.
-- Короткоживущие ветки; squash-merge с заголовком в формате Conventional Commits.
+- Ветка = номер issue (без префиксов); заголовок PR совпадает с именем ветки; одна PR = одна задача.
+- Squash-merge с заголовком `#<issue> type: description`; ветка удаляется после слияния.
 - Релизные ветки — только для патчей к предыдущим мажорным версиям.
 
 ---
@@ -620,7 +623,7 @@ Linux/macOS/Windows × stable + MSRV (для ядра); отдельные за�
 1. Issue или обсуждение для нетривиальных изменений (особенно новых правил).
 2. PR маленький и сфокусированный; описание содержит «что и почему», ссылку на раздел спецификации, результаты бенчмарков для `perf:`-изменений.
 3. Ревью по чек-листу (раздел 17).
-4. Squash-merge, заголовок в формате Conventional Commits.
+4. Squash-merge, заголовок `#<issue> type: description`.
 
 ---
 
@@ -726,16 +729,17 @@ members = [
 
 [workspace.package]
 edition      = "2024"
-rust-version = "1.85"            # зафиксировать фактическую политику MSRV
-license      = "MIT OR Apache-2.0"
+rust-version = "1.96"            # MSRV: минимум masterror 0.32
+license      = "MIT"
 repository   = "https://github.com/<org>/widgetlint"
 version      = "0.1.0"
 
 [workspace.dependencies]
 # версии закреплять здесь, крейты наследуют: foo = { workspace = true }
-thiserror = "2"
-serde     = { version = "1", features = ["derive"] }
+masterror  = "0.32"
+serde      = { version = "1", features = ["derive"] }
 serde_json = "1"
+flate2     = { version = "1.1", default-features = false, features = ["zlib"] }
 # ... остальные зависимости
 
 [workspace.lints.rust]
@@ -746,6 +750,7 @@ rust_2018_idioms = { level = "warn", priority = -1 }
 
 [workspace.lints.clippy]
 pedantic = { level = "warn", priority = -1 }
+nursery  = { level = "warn", priority = -1 }
 unwrap_used = "deny"
 expect_used = "deny"
 panic = "deny"
@@ -810,10 +815,21 @@ profile = "minimal"
 
 ### C. `rustfmt.toml`
 
+Конфиг использует unstable-опции — форматирование только nightly (`cargo +nightly fmt`).
+
 ```toml
 edition = "2024"
-max_width = 100
-use_small_heuristics = "Default"
+max_width = 99
+trailing_comma = "Never"
+brace_style = "SameLineWhere"
+struct_field_align_threshold = 20
+wrap_comments = true
+format_code_in_doc_comments = true
+struct_lit_single_line = false
+imports_granularity = "Crate"
+group_imports = "StdExternalCrate"
+reorder_imports = true
+unstable_features = true
 newline_style = "Unix"
 ```
 
@@ -822,7 +838,7 @@ newline_style = "Unix"
 ```toml
 cognitive-complexity-threshold = 20
 too-many-arguments-threshold = 6
-msrv = "1.85"
+msrv = "1.96"
 allow-unwrap-in-tests = true
 allow-expect-in-tests = true
 allow-indexing-slicing-in-tests = true
@@ -914,8 +930,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@<SHA>   # stable
         with: { components: "rustfmt, clippy" }
       - uses: Swatinem/rust-cache@<SHA>
-      - run: cargo fmt --all --check
-      - run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+      - run: cargo +nightly fmt --all --check
+      - run: cargo clippy --workspace --all-targets --all-features -- -D warnings -W clippy::pedantic -W clippy::nursery
       - run: RUSTDOCFLAGS="-D warnings" cargo doc --workspace --no-deps
 
   test:
