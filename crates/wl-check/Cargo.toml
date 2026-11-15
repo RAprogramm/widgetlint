@@ -9,6 +9,13 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 
+[features]
+default = ["zlib-size"]
+# Vendored reference zlib through `wl-size` (native builds).
+zlib-size = ["wl-size/zlib-sys"]
+# Pure-Rust zlib backend for wasm builds.
+rust-size-backend = ["wl-size/rust-backend"]
+
 [dependencies]
 masterror.workspace = true
 schemars = "1"
@@ -19,7 +26,7 @@ wl-css.workspace = true
 wl-html.workspace = true
 wl-js.workspace = true
 wl-profile.workspace = true
-wl-size.workspace = true
+wl-size = { workspace = true, default-features = false }
 
 [dev-dependencies]
 masterror.workspace = true

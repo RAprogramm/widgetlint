@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<!-- SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com> -->
+<!-- SPDX-License-Identifier: MIT -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>widgetlint playground</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>widgetlint <span id="version" class="dim"></span></h1>
+    <p class="dim">Validator for Telegram Bot API 10.4 widgets — everything the client
+      silently strips, caught before sending. Runs fully in your browser.</p>
+  </header>
+  <main>
+    <section class="editor">
+      <div class="toolbar">
+        <label>fail on
+          <select id="fail-on">
+            <option value="error" selected>error</option>
+            <option value="warn">warn</option>
+            <option value="info">info</option>
+          </select>
+        </label>
+        <span id="size" class="dim"></span>
+      </div>
+      <textarea id="source" spellcheck="false" placeholder="&lt;div class=&quot;card&quot;&gt;Hello&lt;/div&gt;"></textarea>
+    </section>
+    <section class="report">
+      <div id="verdict" class="verdict">loading…</div>
+      <div id="reason" class="reason"></div>
+      <div id="budget" class="budget" hidden>
+        <div class="bar"><div id="bar-fill"></div><span id="bar-budget"></span></div>
+        <div id="budget-text" class="dim"></div>
+      </div>
+      <ul id="findings"></ul>
+      <div id="more" class="dim"></div>
+      <div id="action" class="action" hidden></div>
+      <details id="caveats-box" hidden>
+        <summary class="dim">what this check does not cover</summary>
+        <ul id="caveats"></ul>
+      </details>
+    </section>
+  </main>
+  <footer class="dim">
+    compressed size in the browser uses the pure-Rust zlib backend and may differ
+    from the reference by a byte or two ·
+    <a href="https://github.com/RAprogramm/widgetlint">widgetlint on GitHub</a>
+  </footer>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

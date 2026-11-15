@@ -98,6 +98,15 @@ uv run --python 3.12 tools/zlib_parity.py   # size parity against real zlib
 cargo run -p xtask -- gen-docs              # regenerate rule docs and llms.txt
 ```
 
+The browser playground (`playground/`) is built from the standalone
+`crates/wl-wasm` crate (it swaps the size engine to the pure-Rust zlib
+backend, so it lives outside the workspace on purpose):
+
+```console
+wasm-pack build crates/wl-wasm --target web --out-dir ../../playground/pkg
+python3 -m http.server -d playground 8000    # then open http://localhost:8000
+```
+
 Contributors and coding agents: see [AGENTS.md](AGENTS.md).
 Design documents: `widget-linter-spec.md`, `widget-linter-engineering.md`,
 `widget-linter-ai-native.md`.

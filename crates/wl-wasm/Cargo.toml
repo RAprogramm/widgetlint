@@ -1,0 +1,30 @@
+# SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com>
+# SPDX-License-Identifier: MIT
+
+[package]
+name = "wl-wasm"
+description = "Browser build of the widgetlint checking pipeline"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/RAprogramm/widgetlint"
+
+# Standalone on purpose: the browser build swaps the size engine to the
+# pure-Rust zlib backend, and mixing both backends in one workspace build
+# would enable two flate2 backends at once.
+[workspace]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+masterror = "0.32"
+serde_json = "1"
+wasm-bindgen = "0.2"
+wl-check = { path = "../wl-check", default-features = false, features = ["rust-size-backend"] }
+wl-core = { path = "../wl-core" }
+wl-profile = { path = "../wl-profile" }
+
+[lints.rust]
+missing_docs = "warn"
+unsafe_code = "forbid"

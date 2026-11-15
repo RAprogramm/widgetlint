@@ -13,12 +13,20 @@ version.workspace = true
 [lints]
 workspace = true
 
+[features]
+default = ["zlib-sys"]
+# Vendored reference zlib built statically; the byte-for-byte oracle.
+zlib-sys = ["flate2/zlib", "dep:libz-sys"]
+# Pure-Rust zlib-rs backend for targets without a C toolchain (wasm);
+# bit-identical output to the reference zlib at equal levels.
+rust-backend = ["flate2/rust_backend"]
+
 [dependencies]
 flate2.workspace = true
 # Direct dependency only to unify the `static` feature: force libz-sys to
 # build the vendored reference zlib instead of the system library, which is
 # zlib-ng on some distros and produces different bytes.
-libz-sys.workspace = true
+libz-sys = { workspace = true, optional = true }
 masterror.workspace = true
 wl-core.workspace = true
 wl-profile.workspace = true
