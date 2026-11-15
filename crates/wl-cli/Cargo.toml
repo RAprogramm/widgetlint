@@ -19,8 +19,11 @@ workspace = true
 
 [dependencies]
 clap.workspace = true
+globset.workspace = true
 masterror.workspace = true
 serde_json.workspace = true
+toml.workspace = true
+wl-check.workspace = true
 wl-core.workspace = true
 wl-profile.workspace = true
 wl-size.workspace = true

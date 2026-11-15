@@ -20,7 +20,10 @@ use crate::{
 pub fn run() -> ExitCode {
     let cli = Cli::parse();
     let outcome = match cli.command {
-        Command::Size(args) => command::size::run(&args)
+        Command::Check(args) => command::check::run(&args),
+        Command::Size(args) => command::size::run(&args),
+        Command::Explain(args) => command::explain::run(&args),
+        Command::Rules(args) => command::rules::run(&args)
     };
     match outcome {
         Ok(true) => ExitCode::SUCCESS,

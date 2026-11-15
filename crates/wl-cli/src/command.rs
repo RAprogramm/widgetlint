@@ -3,4 +3,7 @@
 
 //! Subcommand implementations.
 
+pub mod check;
+pub mod explain;
+pub mod rules;
 pub mod size;

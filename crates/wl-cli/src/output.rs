@@ -5,6 +5,7 @@
 
 pub mod human;
 pub mod json;
+pub mod sarif;
 
 use wl_core::{Finding, Severity};
 

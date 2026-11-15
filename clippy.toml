@@ -1,6 +1,6 @@
 cognitive-complexity-threshold = 20
 too-many-arguments-threshold = 6
-msrv = "1.96"
+msrv = "1.100"
 allow-unwrap-in-tests = true
 allow-expect-in-tests = true
 allow-indexing-slicing-in-tests = true
