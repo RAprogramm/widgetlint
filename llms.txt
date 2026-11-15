@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com> -->
+<!-- SPDX-License-Identifier: MIT -->
+
 # widgetlint
 
 > Validator, linter and optimizer for Telegram Bot API 10.4 widgets: catches everything the client silently strips and everything the server refuses, before sending.

@@ -14,6 +14,15 @@ use std::{
 use masterror::{AppError, AppResult};
 use wl_core::RuleMeta;
 
+/// SPDX header every generated file carries so the repository passes
+/// `reuse lint`.
+const SPDX_HEADER: &str = concat!(
+    "<!-- SPDX-",
+    "FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com> -->\n",
+    "<!-- SPDX-",
+    "License-Identifier: MIT -->\n\n",
+);
+
 /// One generated file: workspace-relative path and content.
 struct Generated {
     path:    PathBuf,
@@ -87,6 +96,9 @@ fn generate() -> Vec<Generated> {
         path:    PathBuf::from("llms-full.txt"),
         content: llms_full(&rules)
     });
+    for file in &mut files {
+        file.content.insert_str(0, SPDX_HEADER);
+    }
     files
 }
 

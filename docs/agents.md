@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com> -->
+<!-- SPDX-License-Identifier: MIT -->
+
 # AGENTS.md snippet for widget projects
 
 Paste this into the `AGENTS.md` of a repository that ships Telegram widgets.

@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com> -->
+<!-- SPDX-License-Identifier: MIT -->
+
 # widgetlint — AI-native: что нужно в 2026–2027
 
 **Удобство и надёжность для ИИ-агентов: интерфейсы, контракты, защита от самообмана, оценка качества**

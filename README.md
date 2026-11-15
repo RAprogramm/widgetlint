@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com> -->
+<!-- SPDX-License-Identifier: MIT -->
+
 # widgetlint
 
 Validator and linter for Telegram Bot API 10.4 widgets.

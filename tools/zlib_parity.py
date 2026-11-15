@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com>
+# SPDX-License-Identifier: MIT
+
 #!/usr/bin/env python3
 """Parity gate: compare the widgetlint zlib-9 counter with `zlib.compress(data, 9)`.
 

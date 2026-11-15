@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com> -->
+<!-- SPDX-License-Identifier: MIT -->
+
 # Rule index
 
 Every rule the linter enforces, grouped by category. Severity `error` means the server refuses the widget; `warn` means the client silently changes or removes behavior; `info` is advisory.
