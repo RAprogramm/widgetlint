@@ -25,12 +25,18 @@ pub struct Cli {
 pub enum Command {
     /// Check widget files against the profile
     Check(CheckArgs),
+    /// Print only the pass/fail verdict and the next action
+    Verify(VerifyArgs),
     /// Report raw and zlib level 9 compressed size of a widget file
     Size(SizeArgs),
     /// Print the documentation of one rule
     Explain(ExplainArgs),
     /// List every known rule
-    Rules(RulesArgs)
+    Rules(RulesArgs),
+    /// Print the JSON Schema of the agent report
+    Schema(SchemaArgs),
+    /// Print tool, schema and ruleset version
+    Version(VersionArgs)
 }
 
 /// Arguments of the `check` subcommand.
@@ -65,7 +71,17 @@ pub struct CheckArgs {
     pub budget:         Option<u32>,
     /// Half-width of the near-limit window around the hard limit (TGW005)
     #[arg(long)]
-    pub margin:         Option<u32>
+    pub margin:         Option<u32>,
+    /// Maximum grouped findings kept in `--format agent` reports
+    #[arg(long)]
+    pub max_findings:   Option<usize>,
+    /// File of fingerprints from the previous run; report only new and
+    /// resolved findings
+    #[arg(long)]
+    pub since:          Option<String>,
+    /// Fix-loop iteration echoed back in agent reports
+    #[arg(long, default_value_t = 1)]
+    pub iteration:      u32
 }
 
 /// Arguments of the `size` subcommand.
@@ -99,6 +115,32 @@ pub struct RulesArgs {
     pub format: Format
 }
 
+/// Arguments of the `verify` subcommand.
+#[derive(Debug, Args)]
+pub struct VerifyArgs {
+    /// Widget files, directories, or `-` to read from stdin
+    pub paths:   Vec<String>,
+    /// Exit with `1` when a finding at or above this severity remains
+    #[arg(long, value_enum, default_value_t = FailOn::Error)]
+    pub fail_on: FailOn,
+    /// Path to `widgetlint.toml`, discovered in the working directory by
+    /// default
+    #[arg(long)]
+    pub config:  Option<String>
+}
+
+/// Arguments of the `schema` subcommand.
+#[derive(Debug, Args)]
+pub struct SchemaArgs {}
+
+/// Arguments of the `version` subcommand.
+#[derive(Debug, Args)]
+pub struct VersionArgs {
+    /// Emit a JSON object instead of one text line
+    #[arg(long)]
+    pub json: bool
+}
+
 /// Output formats.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum Format {
@@ -107,7 +149,9 @@ pub enum Format {
     /// Single-line JSON document
     Json,
     /// SARIF 2.1.0 document for GitHub code scanning
-    Sarif
+    Sarif,
+    /// Compact single-line JSON report for AI agents
+    Agent
 }
 
 /// Deployment target accepted on the command line.

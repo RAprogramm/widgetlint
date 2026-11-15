@@ -3,6 +3,7 @@
 
 //! Report renderers.
 
+pub mod agent;
 pub mod human;
 pub mod json;
 pub mod sarif;

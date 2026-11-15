@@ -23,7 +23,10 @@ pub fn run() -> ExitCode {
         Command::Check(args) => command::check::run(&args),
         Command::Size(args) => command::size::run(&args),
         Command::Explain(args) => command::explain::run(&args),
-        Command::Rules(args) => command::rules::run(&args)
+        Command::Rules(args) => command::rules::run(&args),
+        Command::Verify(args) => command::verify::run(&args),
+        Command::Schema(args) => command::schema::run(&args),
+        Command::Version(args) => Ok(command::version::run(&args))
     };
     match outcome {
         Ok(true) => ExitCode::SUCCESS,

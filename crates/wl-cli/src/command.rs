@@ -6,4 +6,7 @@
 pub mod check;
 pub mod explain;
 pub mod rules;
+pub mod schema;
 pub mod size;
+pub mod verify;
+pub mod version;

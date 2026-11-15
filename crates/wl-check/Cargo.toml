@@ -11,7 +11,9 @@ repository.workspace = true
 
 [dependencies]
 masterror.workspace = true
+schemars = "1"
 serde.workspace = true
+serde_json.workspace = true
 wl-core.workspace = true
 wl-css.workspace = true
 wl-html.workspace = true

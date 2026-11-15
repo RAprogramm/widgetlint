@@ -4,7 +4,10 @@
 //! `check` subcommand: run the full pipeline over files, directories or
 //! stdin and render the report.
 
-use std::path::{Path, PathBuf};
+use std::{
+    collections::BTreeSet,
+    path::{Path, PathBuf}
+};
 
 use globset::{Glob, GlobSet, GlobSetBuilder};
 use masterror::{AppError, AppResult};
@@ -65,29 +68,65 @@ pub fn run(args: &CheckArgs) -> AppResult<bool> {
     match format {
         Format::Human => output::human::print_check(&checked, &results),
         Format::Json => output::json::print_check(&checked, &results, &profile, &config)?,
-        Format::Sarif => output::sarif::print_check(&checked, &results)?
+        Format::Sarif => output::sarif::print_check(&checked, &results)?,
+        Format::Agent => {
+            let since = load_since(args)?;
+            let options = output::agent::RenderOptions {
+                profile:      &profile,
+                config:       &config,
+                fail_on:      args.fail_on,
+                max_findings: args
+                    .max_findings
+                    .unwrap_or(wl_check::agent::DEFAULT_MAX_FINDINGS),
+                iteration:    args.iteration,
+                since:        since.as_ref()
+            };
+            output::agent::print_check(&checked, &results, &options)?;
+        }
     }
     Ok(!breach(&results, args.fail_on))
 }
 
-/// Builds the effective configuration: file first, command line on top.
-fn load_config(args: &CheckArgs) -> AppResult<Config> {
-    let path = match &args.config {
+/// Reads `widgetlint.toml` when present: explicit path first, then the
+/// working directory.
+pub fn load_config_file(path: Option<&str>) -> AppResult<Config> {
+    let path = match path {
         Some(path) => Some(PathBuf::from(path)),
         None if Path::new("widgetlint.toml").is_file() => Some(PathBuf::from("widgetlint.toml")),
         None => None
     };
-    let mut config = match &path {
+    match &path {
         Some(path) => {
             let text = std::fs::read_to_string(path).map_err(|error| {
                 AppError::not_found(format!("cannot read '{}': {error}", path.display()))
             })?;
             toml::from_str::<Config>(&text).map_err(|error| {
                 AppError::bad_request(format!("invalid '{}': {error}", path.display()))
-            })?
+            })
         }
-        None => Config::default()
+        None => Ok(Config::default())
+    }
+}
+
+/// Loads the `--since` fingerprint file: one fingerprint per line.
+fn load_since(args: &CheckArgs) -> AppResult<Option<BTreeSet<String>>> {
+    let Some(path) = &args.since else {
+        return Ok(None);
     };
+    let text = std::fs::read_to_string(path)
+        .map_err(|error| AppError::not_found(format!("cannot read '{path}': {error}")))?;
+    Ok(Some(
+        text.lines()
+            .map(str::trim)
+            .filter(|line| !line.is_empty())
+            .map(str::to_owned)
+            .collect()
+    ))
+}
+
+/// Builds the effective configuration: file first, command line on top.
+fn load_config(args: &CheckArgs) -> AppResult<Config> {
+    let mut config = load_config_file(args.config.as_deref())?;
     config.profile = args.profile;
     config.target = match args.target {
         TargetArg::Production => wl_check::config::Target::Production,
@@ -115,7 +154,7 @@ fn load_config(args: &CheckArgs) -> AppResult<Config> {
     Ok(config)
 }
 
-fn profile_for(number: u32) -> AppResult<Profile> {
+pub fn profile_for(number: u32) -> AppResult<Profile> {
     if number == 1 {
         wl_profile::profile_1()
     } else {
@@ -126,7 +165,7 @@ fn profile_for(number: u32) -> AppResult<Profile> {
 }
 
 /// Expands files, directories and `-` into readable inputs.
-fn collect_inputs(paths: &[String], config: &Config) -> AppResult<Vec<Input>> {
+pub fn collect_inputs(paths: &[String], config: &Config) -> AppResult<Vec<Input>> {
     if paths.is_empty() {
         return Err(AppError::bad_request(
             "no input given; pass a file, a directory or -"

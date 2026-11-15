@@ -110,6 +110,21 @@ pub fn lookup(id: &str) -> Option<&'static RuleMeta> {
     registry().get(id)
 }
 
+/// Stable fingerprint of the embedded ruleset, for tool manifests and agent
+/// reports: two builds with the same fingerprint enforce the same rules.
+///
+/// # Examples
+///
+/// ```
+/// let fingerprint = wl_core::rule::fingerprint();
+/// assert_eq!(fingerprint.len(), 16);
+/// assert!(fingerprint.chars().all(|c| c.is_ascii_hexdigit()));
+/// ```
+#[must_use]
+pub fn fingerprint() -> String {
+    format!("{:016x}", crate::hash::fnv1a64(RULES_TOML.as_bytes()))
+}
+
 /// All known rules, ordered by id for stable output.
 #[must_use]
 pub fn all() -> Vec<&'static RuleMeta> {

@@ -11,6 +11,10 @@ It tells any coding agent how to validate widget work before finishing.
 - After every change to a widget file run:
   `widgetlint check <file> --fail-on warn`
   and fix all reported errors and warnings before finishing the task.
+- When you are an AI agent, prefer the machine contract:
+  `widgetlint check <file> --format agent --fail-on warn` (compact JSON:
+  verdict, fingerprints, one next action), `widgetlint verify <file>` between
+  edits, and `--since <fp-file>` to see only findings new since your last run.
 - Target `production` unless told otherwise (production means private chats
   only; groups, inline mode and forwards are test-server features).
 - Keep the compressed size under the 3800-byte soft budget; run

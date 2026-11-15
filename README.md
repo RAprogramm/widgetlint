@@ -11,8 +11,10 @@ outside the widget profile. `widgetlint` catches all of it before sending.
 
 Milestone M1: `check` (HTML, CSS and JavaScript rules with exact spans),
 `size` (exact compressed-size counter with byte-for-byte parity against the
-Python `zlib` reference), `explain` and `rules`. The optimizer (`pack`) and
-the simulator (`sim`) follow per the roadmap in `widget-linter-spec.md`.
+Python `zlib` reference), `verify`, `explain`, `rules`, `schema` and
+`version`. The agent report (`--format agent`) is the machine contract for
+LLM fix loops. The optimizer (`pack`) and the simulator (`sim`) follow per the
+roadmap in `widget-linter-spec.md`.
 
 ## Install
 
@@ -51,6 +53,24 @@ from the working directory (thresholds, rule on/off and severity overrides,
 path filters). Inline suppressions: `<!-- tgw-disable TGW100 -->`,
 `<!-- tgw-disable-file TGW606 -->`, `// tgw-disable-next-line TGW400`.
 
+## AI agents
+
+```console
+$ widgetlint verify widgets/order.html
+{"input":"widgets/order.html","next_action":"fix the error findings above, then re-run widgetlint check","reason":"1 error(s), 5 warning(s)","schema_version":1,"verdict":"fail"}
+
+$ widgetlint check widgets/order.html --format agent --fail-on warn
+{"schema_version":1,"verdict":"fail","reason":"1 error(s), 5 warning(s)","budget":{...},"findings":[{"fp":"1dffa306","id":"TGW400","sev":"error","msg":"...","fix":{"applicability":"manual","hint":"..."},"repeat":1,...}],...}
+```
+
+`verify` is the minimal verdict between edits; `--format agent` is the full
+compact report: grouped repeats, fingerprints (`fp`), caveats, suppression
+statistics and one `next_action`. `--since <fp-file>` reports only findings
+new since the previous run plus resolved fingerprints; `--max-findings` caps
+the report size. The JSON Schema is published by `widgetlint schema`;
+`widgetlint version --json` carries the tool and ruleset identity. A ready
+`AGENTS.md` snippet for widget projects lives in [docs/agents.md](docs/agents.md).
+
 Exit codes: `0` no findings at or above the threshold, `1` findings present,
 `2` usage or input error, `3` internal error. The threshold is `--fail-on`.
 
@@ -60,7 +80,8 @@ Exit codes: `0` no findings at or above the threshold, `1` findings present,
   rule, generated from the rule registry.
 - AI agents: [llms.txt](llms.txt) and [llms-full.txt](llms-full.txt), plus the
   ready `AGENTS.md` snippet in [docs/agents.md](docs/agents.md).
-- Machine output: `check --format json|sarif`, `rules --format json`.
+- Machine output: `check --format json|sarif|agent`, `rules --format json`,
+  `schema`, `version --json`.
 
 ## Development
 

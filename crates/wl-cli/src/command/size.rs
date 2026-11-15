@@ -28,7 +28,7 @@ pub fn run(args: &SizeArgs) -> AppResult<bool> {
     let limits = wl_profile::profile_1()?.limits;
     let findings = evaluate(&info, &limits, args.budget, args.margin);
     match args.format {
-        Format::Sarif => {
+        Format::Sarif | Format::Agent => {
             return Err(AppError::bad_request(
                 "size supports --format human|json only"
             ));

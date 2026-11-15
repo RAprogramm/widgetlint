@@ -40,6 +40,7 @@
 //! );
 //! ```
 
+pub mod agent;
 pub mod config;
 pub mod suppress;
 
@@ -48,15 +49,19 @@ use wl_core::{Finding, Span};
 use wl_profile::Profile;
 use wl_size::SizeInfo;
 
-pub use crate::{config::Config, suppress::suppressions};
+pub use crate::{agent::AgentOptions, config::Config, suppress::suppressions};
 
 /// The result of checking one document.
 #[derive(Debug)]
 pub struct Checked {
     /// Findings that passed suppression and thresholds, in document order.
-    pub findings: Vec<Finding>,
+    pub findings:          Vec<Finding>,
     /// Measured size of the document.
-    pub size:     SizeInfo
+    pub size:              SizeInfo,
+    /// Findings removed by inline suppression directives.
+    pub suppressed:        usize,
+    /// Directives that suppressed no finding.
+    pub unused_directives: usize
 }
 
 /// Checks one widget document.
@@ -100,7 +105,9 @@ pub fn check(source: &str, profile: &Profile, config: &Config) -> AppResult<Chec
         }
     }
     let suppressed = suppressions(source, &doc);
+    let before = findings.len();
     findings.retain(|finding| !suppressed.is_suppressed(finding.rule.id, finding.span));
+    let suppressed_count = before - findings.len();
     apply_rules(&mut findings, config);
     apply_thresholds(&mut findings, config);
     findings.sort_by_key(|finding| {
@@ -111,7 +118,9 @@ pub fn check(source: &str, profile: &Profile, config: &Config) -> AppResult<Chec
     });
     Ok(Checked {
         findings,
-        size
+        size,
+        suppressed: suppressed_count,
+        unused_directives: suppressed.unused_count()
     })
 }
 

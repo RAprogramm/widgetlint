@@ -7,7 +7,7 @@
 //! The parser is syntax-agnostic: callers pass directive text (HTML comment
 //! bodies, JS/CSS line comments) together with the range it applies to.
 
-use std::collections::HashSet;
+use std::{cell::Cell, collections::HashSet};
 
 use crate::span::Span;
 
@@ -73,10 +73,22 @@ pub fn parse_directive(text: &str) -> Option<Directive> {
 type RuleSet = Option<HashSet<String>>;
 
 /// Collected suppressions for one file.
+///
+/// The collector also records which directives actually suppressed a
+/// finding, so callers can report directives that did nothing.
 #[derive(Debug, Clone)]
 pub struct Suppressions {
     file_rules: RuleSet,
-    ranges:     Vec<(Span, RuleSet)>
+    file_used:  Cell<bool>,
+    ranges:     Vec<ScopedRule>
+}
+
+/// One ranged directive with a used marker.
+#[derive(Debug, Clone)]
+struct ScopedRule {
+    span:  Span,
+    rules: RuleSet,
+    used:  Cell<bool>
 }
 
 impl Default for Suppressions {
@@ -84,6 +96,7 @@ impl Default for Suppressions {
     fn default() -> Self {
         Self {
             file_rules: Some(HashSet::new()),
+            file_used:  Cell::new(false),
             ranges:     Vec::new()
         }
     }
@@ -99,7 +112,11 @@ impl Suppressions {
     pub fn add_range(&mut self, span: Span, rules: &[String]) {
         let mut set: RuleSet = Some(HashSet::new());
         merge(&mut set, rules);
-        self.ranges.push((span, set));
+        self.ranges.push(ScopedRule {
+            span,
+            rules: set,
+            used: Cell::new(false)
+        });
     }
 
     /// Checks whether `rule` at `span` is suppressed.
@@ -108,14 +125,46 @@ impl Suppressions {
     #[must_use]
     pub fn is_suppressed(&self, rule: &str, span: Option<Span>) -> bool {
         if allows(&self.file_rules, rule) {
+            self.file_used.set(true);
             return true;
         }
         let Some(span) = span else {
             return false;
         };
-        self.ranges.iter().any(|(range, rules)| {
-            span.start >= range.start && span.end <= range.end && allows(rules, rule)
+        self.ranges.iter().any(|scoped| {
+            let hit = span.start >= scoped.span.start
+                && span.end <= scoped.span.end
+                && allows(&scoped.rules, rule);
+            if hit {
+                scoped.used.set(true);
+            }
+            hit
         })
+    }
+
+    /// Number of directives that suppressed no finding at all.
+    ///
+    /// A file-wide directive counts as one directive, ranged directives count
+    /// individually.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let suppressions = wl_core::Suppressions::default();
+    /// assert_eq!(suppressions.unused_count(), 0);
+    /// ```
+    #[must_use]
+    pub fn unused_count(&self) -> usize {
+        let file_present = self
+            .file_rules
+            .as_ref()
+            .is_none_or(|rules| !rules.is_empty());
+        usize::from(file_present && !self.file_used.get())
+            + self
+                .ranges
+                .iter()
+                .filter(|scoped| !scoped.used.get())
+                .count()
     }
 }
 

@@ -31,7 +31,7 @@ pub fn run(args: &RulesArgs) -> AppResult<bool> {
                 );
             }
         }
-        Format::Json | Format::Sarif => {
+        Format::Json | Format::Sarif | Format::Agent => {
             let document: Vec<_> = rules
                 .iter()
                 .map(|rule| {

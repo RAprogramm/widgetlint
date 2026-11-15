@@ -170,3 +170,133 @@ fn size_still_works() -> AppResult<()> {
     assert!(stdout(&output).contains("zlib-9"));
     Ok(())
 }
+
+#[test]
+fn agent_format_is_a_single_compact_object() -> AppResult<()> {
+    let output = check_file(
+        "agent.html",
+        "<input>",
+        &["--format", "agent", "--fail-on", "warn"]
+    )?;
+    assert_eq!(output.status.code(), Some(1));
+    let text = stdout(&output);
+    assert!(
+        !text.contains('\u{1b}'),
+        "agent output must be free of ANSI escapes"
+    );
+    let report: serde_json::Value = serde_json::from_str(text.trim())
+        .map_err(|error| AppError::internal(format!("agent json: {error}")))?;
+    assert_eq!(report["verdict"], "fail");
+    assert_eq!(report["findings"][0]["id"], "TGW100");
+    assert_eq!(report["findings"][0]["fp"].as_str().unwrap_or("").len(), 8);
+    assert!(report["caveats"].is_array());
+    assert!(
+        report["tool"]["ruleset"]
+            .as_str()
+            .is_some_and(|s| s.starts_with("fnv1a64:"))
+    );
+    Ok(())
+}
+
+#[test]
+fn agent_format_is_an_array_for_several_inputs() -> AppResult<()> {
+    let first = temp_widget("agent-a.html", "<input>")?;
+    let second = temp_widget("agent-b.html", "<b>ok</b>")?;
+    let output = widgetlint(&[
+        "check",
+        &first.display().to_string(),
+        &second.display().to_string(),
+        "--format",
+        "agent"
+    ])?;
+    let reports: Vec<serde_json::Value> = serde_json::from_str(stdout(&output).trim())
+        .map_err(|error| AppError::internal(format!("agent json: {error}")))?;
+    assert_eq!(reports.len(), 2);
+    assert_eq!(reports[1]["verdict"], "pass");
+    Ok(())
+}
+
+#[test]
+fn agent_since_reports_resolved_fingerprints() -> AppResult<()> {
+    let since = temp_widget("fps.txt", "deadbeef\n")?;
+    let output = check_file(
+        "agent-since.html",
+        "<input>",
+        &[
+            "--format",
+            "agent",
+            "--since",
+            &since.display().to_string(),
+            "--fail-on",
+            "warn"
+        ]
+    )?;
+    let report: serde_json::Value = serde_json::from_str(stdout(&output).trim())
+        .map_err(|error| AppError::internal(format!("agent json: {error}")))?;
+    assert_eq!(report["resolved"], serde_json::json!(["deadbeef"]));
+    Ok(())
+}
+
+#[test]
+fn agent_max_findings_truncates() -> AppResult<()> {
+    let output = check_file(
+        "agent-cut.html",
+        "<input>\n<style>color: red; transform: preserve-3d; position: sticky</style>",
+        &[
+            "--format",
+            "agent",
+            "--max-findings",
+            "1",
+            "--fail-on",
+            "warn"
+        ]
+    )?;
+    let report: serde_json::Value = serde_json::from_str(stdout(&output).trim())
+        .map_err(|error| AppError::internal(format!("agent json: {error}")))?;
+    assert_eq!(report["findings"].as_array().map(Vec::len), Some(1));
+    assert!(report["truncated"].as_u64().unwrap_or(0) > 0);
+    Ok(())
+}
+
+#[test]
+fn verify_prints_only_the_verdict() -> AppResult<()> {
+    let file = temp_widget("verify.html", "<input>")?;
+    let output = widgetlint(&["verify", &file.display().to_string(), "--fail-on", "warn"])?;
+    assert_eq!(output.status.code(), Some(1));
+    let verdict: serde_json::Value = serde_json::from_str(stdout(&output).trim())
+        .map_err(|error| AppError::internal(format!("verify json: {error}")))?;
+    assert_eq!(verdict["verdict"], "fail");
+    assert!(
+        verdict.get("findings").is_none(),
+        "verify must stay minimal"
+    );
+    assert!(verdict["next_action"].is_string());
+    let clean = temp_widget("verify-clean.html", "<b>ok</b>")?;
+    let output = widgetlint(&["verify", &clean.display().to_string()])?;
+    assert!(output.status.success());
+    Ok(())
+}
+
+#[test]
+fn version_reports_identity_in_both_formats() -> AppResult<()> {
+    let output = widgetlint(&["version"])?;
+    assert!(output.status.success());
+    assert!(stdout(&output).contains("widgetlint 0.1.0"));
+    let output = widgetlint(&["version", "--json"])?;
+    let value: serde_json::Value = serde_json::from_str(stdout(&output).trim())
+        .map_err(|error| AppError::internal(format!("version json: {error}")))?;
+    assert_eq!(value["name"], "widgetlint");
+    assert_eq!(value["schema_version"], 1);
+    assert!(value["rules"].as_u64().unwrap_or(0) > 0);
+    Ok(())
+}
+
+#[test]
+fn schema_publishes_the_agent_contract() -> AppResult<()> {
+    let output = widgetlint(&["schema"])?;
+    assert!(output.status.success());
+    let schema: serde_json::Value = serde_json::from_str(&stdout(&output))
+        .map_err(|error| AppError::internal(format!("schema json: {error}")))?;
+    assert!(schema.pointer("/properties/next_action").is_some());
+    Ok(())
+}

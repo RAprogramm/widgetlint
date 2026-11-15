@@ -15,6 +15,7 @@
 //! ```
 
 pub mod finding;
+pub mod hash;
 pub mod report;
 pub mod rule;
 pub mod severity;
