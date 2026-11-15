@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com>
+# SPDX-License-Identifier: MIT
+
+[package]
+name = "wl-check"
+description = "End-to-end widget checking pipeline without input or output"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+masterror.workspace = true
+serde.workspace = true
+wl-core.workspace = true
+wl-css.workspace = true
+wl-html.workspace = true
+wl-js.workspace = true
+wl-profile.workspace = true
+wl-size.workspace = true
+
+[dev-dependencies]
+masterror.workspace = true
+
+[lints]
+workspace = true

@@ -109,4 +109,10 @@ impl LineIndex {
     pub const fn line_count(&self) -> usize {
         self.line_starts.len()
     }
+
+    /// Byte offset of every line start; the first entry is always `0`.
+    #[must_use]
+    pub fn line_starts(&self) -> &[u32] {
+        &self.line_starts
+    }
 }

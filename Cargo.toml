@@ -5,6 +5,7 @@
 resolver = "3"
 members = [
   "crates/wl-cli",
+  "crates/wl-check",
   "crates/wl-core",
   "crates/wl-css",
   "crates/wl-html",
@@ -36,7 +37,9 @@ serde_json = "1"
 tendril = "0.5"
 toml = "1"
 wl-core = { path = "crates/wl-core", version = "0.1.0" }
+wl-check = { path = "crates/wl-check", version = "0.1.0" }
 wl-css = { path = "crates/wl-css", version = "0.1.0" }
+wl-html = { path = "crates/wl-html", version = "0.1.0" }
 wl-js = { path = "crates/wl-js", version = "0.1.0" }
 wl-profile = { path = "crates/wl-profile", version = "0.1.0" }
 wl-size = { path = "crates/wl-size", version = "0.1.0" }
