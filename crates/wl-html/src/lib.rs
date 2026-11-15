@@ -1,17 +1,31 @@
 // SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com>
 // SPDX-License-Identifier: MIT
 
-//! HTML5 fragment parsing with exact source spans.
+//! HTML5 fragment parsing with exact source spans, plus the widget HTML rules.
 //!
 //! [`html5ever`] guarantees HTML5-correct tree structure but emits no
 //! positions. This crate pairs it with a lightweight scanner ([`scan`]) that
 //! records byte spans, and aligns the two in document order ([`align`]), so
 //! every element, attribute and comment gets both a spec-correct tree and
 //! exact source positions.
+//!
+//! [`check`] runs the HTML rules (TGW100 to TGW114, TGW150) and the document
+//! limits (TGW302 to TGW304) over a widget document.
+//!
+//! # Examples
+//!
+//! ```
+//! use wl_html::check;
+//!
+//! let profile = wl_profile::profile_1().expect("valid profile");
+//! let findings = check("<input type='text'>", &profile);
+//! assert_eq!(findings.first().expect("one finding").rule.id, "TGW100");
+//! ```
 
 pub mod align;
 pub mod dom;
 pub mod extract;
+pub mod rules;
 pub mod scan;
 pub mod sink;
 
@@ -64,4 +78,28 @@ pub fn parse(source: &str) -> HtmlDoc {
         dom,
         events
     }
+}
+
+/// Checks one widget document against the profile and returns findings sorted
+/// by position.
+///
+/// * `source` — the widget HTML document.
+/// * `profile` — the widget profile providing the out-lists and the limits.
+///
+/// Malformed HTML never fails: the parser recovers exactly like a browser and
+/// the rules run over whatever tree it produced.
+///
+/// # Examples
+///
+/// ```
+/// use wl_html::check;
+///
+/// let profile = wl_profile::profile_1().expect("valid profile");
+/// let findings = check("<a href='http://x.example'>x</a>", &profile);
+/// assert_eq!(findings.first().expect("one finding").rule.id, "TGW111");
+/// ```
+#[must_use]
+pub fn check(source: &str, profile: &wl_profile::Profile) -> Vec<wl_core::finding::Finding> {
+    let doc = parse(source);
+    rules::run(&doc, source, profile)
 }

@@ -35,6 +35,23 @@ pub fn html_css_names(list: &[String], field: &str) -> Result<(), ProfileError> 
     Ok(())
 }
 
+/// Checks SVG element names: ASCII letters in both cases, digits, `-` and `_`.
+pub fn svg_names(list: &[String], field: &str) -> Result<(), ProfileError> {
+    non_empty_unique(list, field)?;
+    for name in list {
+        let valid = !name.is_empty()
+            && name.bytes().all(|byte| {
+                byte.is_ascii_alphabetic() || byte.is_ascii_digit() || byte == b'-' || byte == b'_'
+            });
+        if !valid {
+            return Err(ProfileError::new(format!(
+                "{field}: '{name}' is not an SVG element name"
+            )));
+        }
+    }
+    Ok(())
+}
+
 /// Checks CSS selector tokens: start with `:` and contain no whitespace.
 pub fn selector_tokens(list: &[String], field: &str) -> Result<(), ProfileError> {
     non_empty_unique(list, field)?;

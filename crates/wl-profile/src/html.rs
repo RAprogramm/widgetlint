@@ -30,7 +30,9 @@ pub struct Html {
     /// Elements that change meaning instead of being removed.
     pub degrade:    HtmlDegrade,
     /// Known supported elements; the source list is incomplete by design.
-    pub in_partial: HtmlInPartial
+    pub in_partial: HtmlInPartial,
+    /// SVG elements outside the widget profile (TGW150).
+    pub svg:        HtmlSvg
 }
 
 impl Html {
@@ -49,7 +51,8 @@ impl Html {
             std::slice::from_ref(&self.degrade.label),
             "html.degrade.label"
         )?;
-        validate::html_css_names(&self.in_partial.elements, "html.in_partial.elements")
+        validate::html_css_names(&self.in_partial.elements, "html.in_partial.elements")?;
+        validate::svg_names(&self.svg.elements, "html.svg.elements")
     }
 }
 
@@ -99,5 +102,13 @@ pub struct HtmlDegrade {
 #[serde(deny_unknown_fields)]
 pub struct HtmlInPartial {
     /// Known supported elements; the source list ends with "…".
+    pub elements: Vec<String>
+}
+
+/// SVG elements outside the widget profile (TGW150).
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct HtmlSvg {
+    /// Unsupported SVG element names.
     pub elements: Vec<String>
 }

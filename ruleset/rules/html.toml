@@ -115,3 +115,27 @@ confidence = "certain"
 title = "unsupported SVG element"
 help = "clipPath/mask/pattern/marker/fe*/animate/foreignObject/image do not render"
 spec = "https://core.telegram.org/bots/widgets#html"
+
+[[rules]]
+id = "TGW302"
+severity = "error"
+confidence = "certain"
+title = "attribute or inline style longer than 8 K UTF-16 units"
+help = "split the value or move long data out of the attribute"
+spec = "https://core.telegram.org/bots/widgets#limits"
+
+[[rules]]
+id = "TGW303"
+severity = "error"
+confidence = "certain"
+title = "more than 2000 DOM nodes"
+help = "flatten the markup: fewer wrappers, fewer repeated elements"
+spec = "https://core.telegram.org/bots/widgets#limits"
+
+[[rules]]
+id = "TGW304"
+severity = "error"
+confidence = "certain"
+title = "text value over 32 K UTF-16 units or document over 48 K"
+help = "shorten the text: the server refuses oversized documents"
+spec = "https://core.telegram.org/bots/widgets#limits"

@@ -145,6 +145,36 @@ elements = [
   "a",
 ]
 
+[html.svg]
+elements = [
+  "clipPath",
+  "mask",
+  "pattern",
+  "marker",
+  "animate",
+  "animateTransform",
+  "animateMotion",
+  "foreignObject",
+  "image",
+  "feBlend",
+  "feColorMatrix",
+  "feComponentTransfer",
+  "feComposite",
+  "feConvolveMatrix",
+  "feDiffuseLighting",
+  "feDisplacementMap",
+  "feDropShadow",
+  "feFlood",
+  "feGaussianBlur",
+  "feImage",
+  "feMerge",
+  "feMorphology",
+  "feOffset",
+  "feSpecularLighting",
+  "feTile",
+  "feTurbulence",
+]
+
 [css.out]
 units_height = ["vh", "dvh", "svh", "lvh", "vb"]
 overflow_to_hidden = ["auto", "scroll"]

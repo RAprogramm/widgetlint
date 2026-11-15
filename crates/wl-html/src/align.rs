@@ -24,7 +24,7 @@ pub fn align(dom: &mut Dom, events: &[ScanEvent]) {
     }
     let names: Vec<(NodeId, String)> = dom
         .elements()
-        .map(|(id, element)| (id, element.local().to_owned()))
+        .map(|(id, element)| (id, element.local().to_ascii_lowercase()))
         .collect();
     for (id, name) in names {
         let Some(tag) = starts.get_mut(name.as_str()).and_then(VecDeque::pop_front) else {

@@ -1385,8 +1385,10 @@ name = "wl-html"
 version = "0.1.0"
 dependencies = [
  "html5ever",
+ "masterror",
  "tendril",
  "wl-core",
+ "wl-profile",
 ]
 
 [[package]]
