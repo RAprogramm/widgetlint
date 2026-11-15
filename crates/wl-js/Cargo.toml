@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com>
+# SPDX-License-Identifier: MIT
+
+[package]
+name = "wl-js"
+description = "Telegram widget JavaScript rules built on the oxc parser"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+masterror.workspace = true
+oxc_allocator.workspace = true
+oxc_ast.workspace = true
+oxc_ast_visit.workspace = true
+oxc_parser.workspace = true
+oxc_span.workspace = true
+wl-core.workspace = true
+wl-profile.workspace = true
+
+[dev-dependencies]
+masterror.workspace = true
+
+[lints]
+workspace = true

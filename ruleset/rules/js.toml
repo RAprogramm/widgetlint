@@ -1,0 +1,77 @@
+# SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# Rule metadata: JavaScript rules (spec section 8.5). Severity here is the
+# default; user config can override. IDs are never reused.
+
+[[rules]]
+id = "TGW400"
+severity = "error"
+confidence = "certain"
+title = "network APIs are disabled in widgets"
+help = "widgets have no network access; ask the bot with TelegramWidget.requestSendData"
+spec = "https://core.telegram.org/bots/widgets#javascript"
+
+[[rules]]
+id = "TGW401"
+severity = "warn"
+confidence = "certain"
+title = "navigation APIs do not work in widgets"
+help = "use TelegramWidget.openLink / openTelegramLink instead of location, history or window.open"
+spec = "https://core.telegram.org/bots/widgets#javascript"
+
+[[rules]]
+id = "TGW402"
+severity = "warn"
+confidence = "certain"
+title = "dialogs are unavailable in widgets"
+help = "alert/confirm/prompt/print do nothing; draw the message inside the widget"
+spec = "https://core.telegram.org/bots/widgets#javascript"
+
+[[rules]]
+id = "TGW403"
+severity = "warn"
+confidence = "certain"
+title = "this navigator API is unavailable in widgets"
+help = "use TelegramWidget.copyText and HapticFeedback instead of clipboard/share/vibrate"
+spec = "https://core.telegram.org/bots/widgets#javascript"
+
+[[rules]]
+id = "TGW404"
+severity = "warn"
+confidence = "certain"
+title = "this DOM or file API is unavailable in widgets"
+help = "no shadow DOM, Blob, FileReader or fullscreen; keep the widget plain HTML"
+spec = "https://core.telegram.org/bots/widgets#javascript"
+
+[[rules]]
+id = "TGW405"
+severity = "info"
+confidence = "heuristic"
+title = "focus/blur/select do nothing in widgets"
+help = "widgets cannot take keyboard focus; drive state from classes and events"
+spec = "https://core.telegram.org/bots/widgets#javascript"
+
+[[rules]]
+id = "TGW406"
+severity = "warn"
+confidence = "certain"
+title = "this canvas feature is outside the profile"
+help = "no getImageData/toDataURL/WebGL/OffscreenCanvas; draw with the supported 2D subset"
+spec = "https://core.telegram.org/bots/widgets#canvas"
+
+[[rules]]
+id = "TGW408"
+severity = "warn"
+confidence = "certain"
+title = "TelegramWidget.sendMessage does not exist"
+help = "use TelegramWidget.requestSendData to ask the bot to send a message"
+spec = "https://core.telegram.org/bots/widgets#javascript"
+
+[[rules]]
+id = "TGW411"
+severity = "info"
+confidence = "certain"
+title = "deprecated TelegramWidget theme alias"
+help = "use TelegramWidget.onThemeChange instead of TelegramWidget.theme or onTheme"
+spec = "https://core.telegram.org/bots/widgets#javascript"

@@ -8,6 +8,7 @@ members = [
   "crates/wl-core",
   "crates/wl-css",
   "crates/wl-html",
+  "crates/wl-js",
   "crates/wl-profile",
   "crates/wl-size",
 ]
@@ -25,12 +26,18 @@ flate2 = { version = "1", default-features = false, features = ["zlib"] }
 html5ever = "0.40"
 libz-sys = { version = "1", features = ["static"] }
 masterror = "0.32"
+oxc_allocator = "0.158.0"
+oxc_ast = "0.158.0"
+oxc_ast_visit = "0.158.0"
+oxc_parser = "0.158.0"
+oxc_span = "0.158.0"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tendril = "0.5"
 toml = "1"
 wl-core = { path = "crates/wl-core", version = "0.1.0" }
 wl-css = { path = "crates/wl-css", version = "0.1.0" }
+wl-js = { path = "crates/wl-js", version = "0.1.0" }
 wl-profile = { path = "crates/wl-profile", version = "0.1.0" }
 wl-size = { path = "crates/wl-size", version = "0.1.0" }
 
