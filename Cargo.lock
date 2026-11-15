@@ -633,8 +633,19 @@ dependencies = [
  "clap",
  "masterror",
  "serde_json",
+ "wl-core",
  "wl-profile",
  "wl-size",
+]
+
+[[package]]
+name = "wl-core"
+version = "0.1.0"
+dependencies = [
+ "masterror",
+ "serde",
+ "serde_json",
+ "toml",
 ]
 
 [[package]]
@@ -653,6 +664,7 @@ dependencies = [
  "flate2",
  "libz-sys",
  "masterror",
+ "wl-core",
  "wl-profile",
 ]
 

@@ -1,0 +1,45 @@
+# SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# Rule metadata: size rules (spec section 8.1). Severity here is the default;
+# user config can override. IDs are never reused.
+
+[[rules]]
+id = "TGW001"
+severity = "error"
+confidence = "certain"
+title = "raw HTML exceeds 32768 bytes"
+help = "remove markup or shorten text; the server refuses oversized widgets"
+spec = "https://core.telegram.org/bots/widgets#limits"
+
+[[rules]]
+id = "TGW002"
+severity = "error"
+confidence = "certain"
+title = "compressed size exceeds 4096 bytes"
+help = "use size --breakdown: the most expensive parts are usually script and style"
+spec = "https://core.telegram.org/bots/widgets#counting-the-size"
+
+[[rules]]
+id = "TGW003"
+severity = "warn"
+confidence = "certain"
+title = "compressed size exceeds the soft budget"
+help = "the documentation recommends aiming for 3800 bytes after compression"
+spec = "https://core.telegram.org/bots/widgets#writing-widgets-with-an-llm"
+
+[[rules]]
+id = "TGW004"
+severity = "error"
+confidence = "certain"
+title = "invalid UTF-8 or a NUL character in the input"
+help = "save the widget as UTF-8 without a byte-order mark or NUL bytes"
+spec = "https://core.telegram.org/bots/widgets#limits"
+
+[[rules]]
+id = "TGW005"
+severity = "info"
+confidence = "certain"
+title = "compressed size is within 64 bytes of the hard limit"
+help = "zlib builds differ by tens of bytes near the limit; trust the Python reference"
+spec = "https://core.telegram.org/bots/widgets#counting-the-size"

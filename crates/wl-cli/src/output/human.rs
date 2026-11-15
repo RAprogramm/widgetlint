@@ -3,8 +3,9 @@
 
 //! Human-readable report.
 
+use wl_core::Finding;
 use wl_profile::limits::Limits;
-use wl_size::{SizeFinding, SizeInfo};
+use wl_size::SizeInfo;
 
 use crate::output::verdict;
 
@@ -14,7 +15,7 @@ pub fn print_size(
     info: &SizeInfo,
     limits: &Limits,
     budget: u32,
-    findings: &[SizeFinding]
+    findings: &[Finding]
 ) {
     let raw = info.raw;
     let zlib9 = i64::try_from(info.zlib9).unwrap_or(i64::MAX);
@@ -30,7 +31,7 @@ pub fn print_size(
     for finding in findings {
         println!(
             "  {} [{}] {}",
-            finding.rule.code(),
+            finding.rule.id,
             finding.severity.as_str(),
             finding.message
         );

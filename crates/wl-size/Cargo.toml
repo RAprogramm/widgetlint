@@ -20,4 +20,5 @@ flate2.workspace = true
 # zlib-ng on some distros and produces different bytes.
 libz-sys.workspace = true
 masterror.workspace = true
+wl-core.workspace = true
 wl-profile.workspace = true

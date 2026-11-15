@@ -1,0 +1,117 @@
+# SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com>
+# SPDX-License-Identifier: MIT
+
+# Rule metadata: HTML and SVG rules (spec section 8.2). Severity here is the
+# default; user config can override. IDs are never reused.
+
+[[rules]]
+id = "TGW100"
+severity = "warn"
+confidence = "certain"
+title = "form controls are removed together with their content"
+help = "widgets have no input fields; use buttons and state instead"
+spec = "https://core.telegram.org/bots/widgets#html"
+
+[[rules]]
+id = "TGW101"
+severity = "info"
+confidence = "certain"
+title = "form/label degrade to plain boxes; form semantics do not work"
+help = "handle interaction with click handlers and widget state"
+spec = "https://core.telegram.org/bots/widgets#html"
+
+[[rules]]
+id = "TGW102"
+severity = "warn"
+confidence = "certain"
+title = "media and embedding elements are removed"
+help = "no audio/video/iframe/dialog in widgets; draw with canvas or data: images"
+spec = "https://core.telegram.org/bots/widgets#html"
+
+[[rules]]
+id = "TGW103"
+severity = "warn"
+confidence = "certain"
+title = "service elements are removed"
+help = "link/meta/base/template/slot/math/ruby have no effect in widgets"
+spec = "https://core.telegram.org/bots/widgets#html"
+
+[[rules]]
+id = "TGW104"
+severity = "error"
+confidence = "certain"
+title = "external <script src> never executes"
+help = "no network in widgets; CDN libraries (Chart.js, D3) are not available"
+spec = "https://core.telegram.org/bots/widgets#html"
+
+[[rules]]
+id = "TGW105"
+severity = "warn"
+confidence = "certain"
+title = "<img> not from a data: URL shows a placeholder"
+help = "embed images as data: URLs (PNG, JPEG, GIF, WebP)"
+spec = "https://core.telegram.org/bots/widgets#html"
+
+[[rules]]
+id = "TGW106"
+severity = "warn"
+confidence = "certain"
+title = "data: image uses an unsupported type"
+help = "supported data: image types are PNG, JPEG, GIF and WebP"
+spec = "https://core.telegram.org/bots/widgets#html"
+
+[[rules]]
+id = "TGW108"
+severity = "warn"
+confidence = "certain"
+title = "legacy presentational element or attribute"
+help = "use modern CSS instead of center/font/big/align/bgcolor and friends"
+spec = "https://core.telegram.org/bots/widgets#html"
+
+[[rules]]
+id = "TGW109"
+severity = "warn"
+confidence = "certain"
+title = "unsupported interactive attribute"
+help = "contenteditable/draggable/tabindex/autofocus have no effect in widgets"
+spec = "https://core.telegram.org/bots/widgets#html"
+
+[[rules]]
+id = "TGW110"
+severity = "info"
+confidence = "heuristic"
+title = "unknown element will render as an inline box"
+help = "the supported element list in the documentation is incomplete; verify on a device"
+spec = "https://core.telegram.org/bots/widgets#html"
+
+[[rules]]
+id = "TGW111"
+severity = "warn"
+confidence = "certain"
+title = "<a href> with a scheme other than https: or #fragment is ignored"
+help = "use https: URLs, #fragment anchors, or TelegramWidget.openLink"
+spec = "https://core.telegram.org/bots/widgets#html"
+
+[[rules]]
+id = "TGW113"
+severity = "info"
+confidence = "certain"
+title = "aria-* attributes are kept but have no effect"
+help = "duplicate important semantics into the message caption"
+spec = "https://core.telegram.org/bots/widgets#html"
+
+[[rules]]
+id = "TGW114"
+severity = "info"
+confidence = "heuristic"
+title = "element implies text input or focus, but there is no keyboard"
+help = "widgets receive taps only; no text input or focus model exists"
+spec = "https://core.telegram.org/bots/widgets#html"
+
+[[rules]]
+id = "TGW150"
+severity = "warn"
+confidence = "certain"
+title = "unsupported SVG element"
+help = "clipPath/mask/pattern/marker/fe*/animate/foreignObject/image do not render"
+spec = "https://core.telegram.org/bots/widgets#html"

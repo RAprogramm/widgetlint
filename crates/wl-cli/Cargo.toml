@@ -21,5 +21,6 @@ workspace = true
 clap.workspace = true
 masterror.workspace = true
 serde_json.workspace = true
+wl-core.workspace = true
 wl-profile.workspace = true
 wl-size.workspace = true

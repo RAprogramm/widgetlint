@@ -72,10 +72,11 @@ mod counter_tests {
 
 mod status_tests {
     use masterror::AppResult;
+    use wl_core::Severity;
     use wl_profile::limits::Limits;
     use wl_size::{
         SizeInfo,
-        status::{DEFAULT_BUDGET, DEFAULT_MARGIN, Severity, SizeRule, evaluate}
+        status::{DEFAULT_BUDGET, DEFAULT_MARGIN, evaluate}
     };
 
     fn limits() -> AppResult<Limits> {
@@ -101,7 +102,7 @@ mod status_tests {
         };
         let findings = evaluate(&info, &limits()?, DEFAULT_BUDGET, DEFAULT_MARGIN);
         assert_eq!(findings.len(), 1);
-        assert_eq!(findings[0].rule, SizeRule::Tgw003);
+        assert_eq!(findings[0].rule.id, "TGW003");
         assert_eq!(findings[0].severity, Severity::Warn);
         Ok(())
     }
@@ -113,7 +114,7 @@ mod status_tests {
             zlib9: 4231
         };
         let findings = evaluate(&info, &limits()?, DEFAULT_BUDGET, DEFAULT_MARGIN);
-        assert_eq!(findings[0].rule, SizeRule::Tgw002);
+        assert_eq!(findings[0].rule.id, "TGW002");
         assert_eq!(findings[0].severity, Severity::Error);
         assert!(findings[0].message.contains("over by 135"));
         Ok(())
@@ -126,7 +127,7 @@ mod status_tests {
             zlib9: 100
         };
         let findings = evaluate(&info, &limits()?, DEFAULT_BUDGET, DEFAULT_MARGIN);
-        assert!(findings.iter().any(|f| f.rule == SizeRule::Tgw001));
+        assert!(findings.iter().any(|f| f.rule.id == "TGW001"));
         Ok(())
     }
 
@@ -137,7 +138,7 @@ mod status_tests {
             zlib9: 4060
         };
         let findings = evaluate(&info, &limits()?, DEFAULT_BUDGET, DEFAULT_MARGIN);
-        assert!(findings.iter().any(|f| f.rule == SizeRule::Tgw005));
+        assert!(findings.iter().any(|f| f.rule.id == "TGW005"));
         Ok(())
     }
 

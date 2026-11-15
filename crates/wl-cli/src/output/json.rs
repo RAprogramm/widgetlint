@@ -5,8 +5,9 @@
 
 use masterror::{AppError, AppResult};
 use serde_json::json;
+use wl_core::Finding;
 use wl_profile::limits::Limits;
-use wl_size::{SizeFinding, SizeInfo};
+use wl_size::SizeInfo;
 
 use crate::output::verdict;
 
@@ -20,7 +21,7 @@ pub fn print_size(
     info: &SizeInfo,
     limits: &Limits,
     budget: u32,
-    findings: &[SizeFinding]
+    findings: &[Finding]
 ) -> AppResult<()> {
     let over_by = info
         .zlib9
@@ -39,7 +40,7 @@ pub fn print_size(
             .iter()
             .map(|finding| {
                 json!({
-                    "rule": finding.rule.code(),
+                    "rule": finding.rule.id,
                     "severity": finding.severity.as_str(),
                     "message": finding.message,
                 })

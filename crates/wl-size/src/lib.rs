@@ -24,7 +24,7 @@ use masterror::AppResult;
 pub use crate::{
     counter::{ZLIB_LEVEL, ZlibCounter},
     info::SizeInfo,
-    status::{DEFAULT_BUDGET, DEFAULT_MARGIN, Severity, SizeFinding, SizeRule, evaluate}
+    status::{DEFAULT_BUDGET, DEFAULT_MARGIN, SizeRule, evaluate}
 };
 
 /// Returns the zlib level 9 compressed size of `data` in bytes.

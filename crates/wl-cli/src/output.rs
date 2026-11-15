@@ -6,10 +6,10 @@
 pub mod human;
 pub mod json;
 
-use wl_size::{Severity, SizeFinding};
+use wl_core::{Finding, Severity};
 
 /// Overall verdict derived from finding severities.
-pub fn verdict(findings: &[SizeFinding]) -> &'static str {
+pub fn verdict(findings: &[Finding]) -> &'static str {
     if findings
         .iter()
         .any(|finding| finding.severity == Severity::Error)
