@@ -8,7 +8,7 @@ use wl_core::{
     rule::lookup,
     severity::Severity,
     span::{LineIndex, Span},
-    suppress::{DirectiveKind, parse_directive},
+    suppress::{DirectiveKind, parse_directive}
 };
 
 #[test]
@@ -30,7 +30,7 @@ fn line_index_resolves_crlf_and_unicode() {
     assert_eq!((second.line, second.col), (2, 2));
     let third = index.position(
         source,
-        u32::try_from(source.len() - 1).expect("small literal"),
+        u32::try_from(source.len() - 1).expect("small literal")
     );
     assert_eq!(third.line, 3);
 }
