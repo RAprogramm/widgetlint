@@ -12,6 +12,7 @@ members = [
   "crates/wl-js",
   "crates/wl-profile",
   "crates/wl-size",
+  "crates/xtask",
 ]
 
 [workspace.package]

@@ -1,0 +1,17 @@
+# SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com>
+# SPDX-License-Identifier: MIT
+
+[package]
+name = "xtask"
+description = "Repository build tasks: documentation generation"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+masterror.workspace = true
+wl-core.workspace = true
+
+[lints]
+workspace = true

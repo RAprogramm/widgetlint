@@ -1,0 +1,62 @@
+# widgetlint
+
+> Validator, linter and optimizer for Telegram Bot API 10.4 widgets: catches everything the client silently strips and everything the server refuses, before sending.
+
+## Rule reference
+
+- [TGW001 — raw HTML exceeds 32768 bytes](docs/rules/TGW001.md): raw HTML exceeds 32768 bytes
+- [TGW002 — compressed size exceeds 4096 bytes](docs/rules/TGW002.md): compressed size exceeds 4096 bytes
+- [TGW003 — compressed size exceeds the soft budget](docs/rules/TGW003.md): compressed size exceeds the soft budget
+- [TGW004 — invalid UTF-8 or a NUL character in the input](docs/rules/TGW004.md): invalid UTF-8 or a NUL character in the input
+- [TGW005 — compressed size is within 64 bytes of the hard limit](docs/rules/TGW005.md): compressed size is within 64 bytes of the hard limit
+- [TGW100 — form controls are removed together with their content](docs/rules/TGW100.md): form controls are removed together with their content
+- [TGW101 — form/label degrade to plain boxes; form semantics do not work](docs/rules/TGW101.md): form/label degrade to plain boxes; form semantics do not work
+- [TGW102 — media and embedding elements are removed](docs/rules/TGW102.md): media and embedding elements are removed
+- [TGW103 — service elements are removed](docs/rules/TGW103.md): service elements are removed
+- [TGW104 — external <script src> never executes](docs/rules/TGW104.md): external <script src> never executes
+- [TGW105 — <img> not from a data: URL shows a placeholder](docs/rules/TGW105.md): <img> not from a data: URL shows a placeholder
+- [TGW106 — data: image uses an unsupported type](docs/rules/TGW106.md): data: image uses an unsupported type
+- [TGW108 — legacy presentational element or attribute](docs/rules/TGW108.md): legacy presentational element or attribute
+- [TGW109 — unsupported interactive attribute](docs/rules/TGW109.md): unsupported interactive attribute
+- [TGW110 — unknown element will render as an inline box](docs/rules/TGW110.md): unknown element will render as an inline box
+- [TGW111 — <a href> with a scheme other than https: or #fragment is ignored](docs/rules/TGW111.md): <a href> with a scheme other than https: or #fragment is ignored
+- [TGW113 — aria-* attributes are kept but have no effect](docs/rules/TGW113.md): aria-* attributes are kept but have no effect
+- [TGW114 — element implies text input or focus, but there is no keyboard](docs/rules/TGW114.md): element implies text input or focus, but there is no keyboard
+- [TGW150 — unsupported SVG element](docs/rules/TGW150.md): unsupported SVG element
+- [TGW200 — viewport height units are unsupported](docs/rules/TGW200.md): viewport height units are unsupported
+- [TGW201 — overflow auto/scroll is rewritten to hidden](docs/rules/TGW201.md): overflow auto/scroll is rewritten to hidden
+- [TGW202 — position sticky is rewritten to relative](docs/rules/TGW202.md): position sticky is rewritten to relative
+- [TGW203 — logical properties are unsupported](docs/rules/TGW203.md): logical properties are unsupported
+- [TGW204 — multi-column layout is unsupported](docs/rules/TGW204.md): multi-column layout is unsupported
+- [TGW205 — this display value is unsupported](docs/rules/TGW205.md): this display value is unsupported
+- [TGW206 — 3D transforms are unsupported](docs/rules/TGW206.md): 3D transforms are unsupported
+- [TGW207 — this filter function is unsupported](docs/rules/TGW207.md): this filter function is unsupported
+- [TGW208 — clipping, masking and blending are unsupported](docs/rules/TGW208.md): clipping, masking and blending are unsupported
+- [TGW209 — this text effect is unsupported](docs/rules/TGW209.md): this text effect is unsupported
+- [TGW210 — modern color function is unsupported](docs/rules/TGW210.md): modern color function is unsupported
+- [TGW211 — env()/url() argument is unsupported](docs/rules/TGW211.md): env()/url() argument is unsupported
+- [TGW212 — this at-rule or nested CSS is unsupported](docs/rules/TGW212.md): this at-rule or nested CSS is unsupported
+- [TGW213 — this selector pseudo-class is unsupported](docs/rules/TGW213.md): this selector pseudo-class is unsupported
+- [TGW214 — this @media feature is unsupported](docs/rules/TGW214.md): this @media feature is unsupported
+- [TGW215 — named font families are not available](docs/rules/TGW215.md): named font families are not available
+- [TGW216 — property is not recognized by the CSS engine](docs/rules/TGW216.md): property is not recognized by the CSS engine
+- [TGW300 — more than 400 CSS rules](docs/rules/TGW300.md): more than 400 CSS rules
+- [TGW301 — more than 32 @keyframes rules](docs/rules/TGW301.md): more than 32 @keyframes rules
+- [TGW302 — attribute or inline style longer than 8 K UTF-16 units](docs/rules/TGW302.md): attribute or inline style longer than 8 K UTF-16 units
+- [TGW303 — more than 2000 DOM nodes](docs/rules/TGW303.md): more than 2000 DOM nodes
+- [TGW304 — text value over 32 K UTF-16 units or document over 48 K](docs/rules/TGW304.md): text value over 32 K UTF-16 units or document over 48 K
+- [TGW400 — network APIs are disabled in widgets](docs/rules/TGW400.md): network APIs are disabled in widgets
+- [TGW401 — navigation APIs do not work in widgets](docs/rules/TGW401.md): navigation APIs do not work in widgets
+- [TGW402 — dialogs are unavailable in widgets](docs/rules/TGW402.md): dialogs are unavailable in widgets
+- [TGW403 — this navigator API is unavailable in widgets](docs/rules/TGW403.md): this navigator API is unavailable in widgets
+- [TGW404 — this DOM or file API is unavailable in widgets](docs/rules/TGW404.md): this DOM or file API is unavailable in widgets
+- [TGW405 — focus/blur/select do nothing in widgets](docs/rules/TGW405.md): focus/blur/select do nothing in widgets
+- [TGW406 — this canvas feature is outside the profile](docs/rules/TGW406.md): this canvas feature is outside the profile
+- [TGW408 — TelegramWidget.sendMessage does not exist](docs/rules/TGW408.md): TelegramWidget.sendMessage does not exist
+- [TGW411 — deprecated TelegramWidget theme alias](docs/rules/TGW411.md): deprecated TelegramWidget theme alias
+
+## Optional
+
+- [Rule index](docs/rules/index.md): every rule in one table
+- [Full catalog](llms-full.txt): all rule pages in a single file
+- [Telegram widget specification](https://core.telegram.org/bots/widgets): the upstream source of truth

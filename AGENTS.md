@@ -1,0 +1,60 @@
+# AGENTS.md — working in this repository
+
+Instructions for AI coding agents and new contributors working **on widgetlint
+itself**. For the snippet to paste into widget *projects*, see
+`docs/agents.md`.
+
+## Build and test
+
+```console
+cargo build --workspace
+cargo nextest run --workspace
+cargo test --doc --workspace
+cargo +nightly fmt --all --check
+cargo clippy --workspace --all-targets --all-features -- -D warnings -W clippy::pedantic -W clippy::nursery
+cargo doc --no-deps --workspace
+uv run --python 3.12 tools/zlib_parity.py        # size parity against real zlib
+cargo run -p xtask -- gen-docs                   # regenerate docs, llms.txt
+cargo run -p xtask -- check-docs                 # CI gate for generated docs
+```
+
+## Layout
+
+- `crates/wl-core` — findings, rule registry, report, suppressions. No I/O.
+- `crates/wl-profile` — profile-1 data loader and validation.
+- `crates/wl-size` — exact zlib-9 size counter (TGW001–005).
+- `crates/wl-html` — html5ever parser with exact spans plus HTML rules.
+- `crates/wl-css` — span-precise CSS scanner and rules.
+- `crates/wl-js` — JavaScript rules on the oxc parser.
+- `crates/wl-check` — end-to-end pipeline: every region, suppressions, config.
+- `crates/wl-cli` — the `widgetlint` binary.
+- `crates/xtask` — build tasks (documentation generation).
+- `ruleset/` — profile and rule metadata as TOML; the single source of truth.
+
+## Rules
+
+- Rust edition 2024; format with `cargo +nightly fmt`; 99-column limit.
+- Errors only via `masterror`; no `unwrap`/`expect`/`panic` outside tests.
+- No `#[allow]` suppressions without a written justification next to them.
+- No `mod.rs`; one task per module; public items carry doc comments with
+  examples — the docs are the tests (`cargo test --doc`).
+- Output must be deterministic; never iterate a `HashMap` into output.
+- `wl-core`, `wl-check` and every engine crate stay free of I/O and network.
+
+## Adding a rule (definition of done)
+
+1. Metadata entry in `ruleset/rules/<region>.toml` (id, severity, confidence,
+   title, help, spec URL).
+2. Implementation in the owning engine crate, driven by `ruleset/profile-1.toml`
+   lists — never hard-code lists in code.
+3. At least two tests: the rule fires and the rule does not fire, with negative
+   scenarios around every boundary.
+4. `cargo run -p xtask -- gen-docs` and commit the regenerated pages.
+
+## Never
+
+- Never edit `docs/rules/*.md`, `llms.txt` or `llms-full.txt` by hand; edit
+  `ruleset/` and regenerate.
+- Never add a dependency to `wl-core` without an ADR in `docs/adr/`.
+- Never push or open PRs unless explicitly asked; commit locally when the full
+  gauntlet is green.

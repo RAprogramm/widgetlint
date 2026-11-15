@@ -1,6 +1,6 @@
 # widgetlint
 
-Validator, linter and optimizer for Telegram Bot API 10.4 widgets.
+Validator and linter for Telegram Bot API 10.4 widgets.
 
 Widgets are HTML/CSS/JS blocks rendered inside a message bubble in a QuickJS
 sandbox with no network. The server accepts at most 32768 bytes of HTML and
@@ -9,34 +9,72 @@ outside the widget profile. `widgetlint` catches all of it before sending.
 
 ## Status
 
-Milestone M0: exact compressed-size counter (`size`) with byte-for-byte parity
-with the Python `zlib` reference, and the profile-1 data loader. The static
-linter (`check`), the optimizer (`pack`) and the simulator (`sim`) follow per
-the roadmap in `widget-linter-spec.md`.
+Milestone M1: `check` (HTML, CSS and JavaScript rules with exact spans),
+`size` (exact compressed-size counter with byte-for-byte parity against the
+Python `zlib` reference), `explain` and `rules`. The optimizer (`pack`) and
+the simulator (`sim`) follow per the roadmap in `widget-linter-spec.md`.
+
+## Install
+
+```console
+cargo install --path crates/wl-cli
+```
 
 ## Usage
 
 ```console
-$ widgetlint size widgets/order.html
-widgets/order.html: 31204 B -> 4231 B (zlib-9)    limit 4096    over by +135
+$ widgetlint check widgets/order.html
+widgets/order.html
+  warn   TGW100  <input> is removed together with its content    14:3
+         help: widgets have no input fields; use buttons and state instead
+  error  TGW400  network API `fetch` is disabled in widgets    41:5
+         help: widgets have no network access; ask the bot with TelegramWidget.requestSendData
+2 errors, 3 warnings, 0 info
 
-$ widgetlint size widgets/order.html --format json
-{"schema_version":1,"size":{"raw":31204,"zlib9":4231,"limit":4096,"budget":3800,"over_by":135},"verdict":"fail"}
+$ widgetlint check widgets/order.html --format json
+[{"schema_version":1,"input":{"path":"widgets/order.html","bytes":31204}, ... }]
+
+$ widgetlint check widgets/ --format sarif --fail-on warn > widgetlint.sarif
+
+$ widgetlint size widgets/order.html
+widgets/order.html: 31204 B -> 4231 B (zlib-9)    limit 4096    budget 3800    fail (+135)
+
+$ widgetlint explain TGW100
+TGW100  warn  certain
+form controls are removed together with their content
+help: widgets have no input fields; use buttons and state instead
+spec: https://core.telegram.org/bots/widgets#html
 ```
 
-Exit codes: `0` no findings, `1` findings at or above the threshold,
-`2` usage or input error, `3` internal error.
+`check` accepts files, directories and `-` for stdin; reads `widgetlint.toml`
+from the working directory (thresholds, rule on/off and severity overrides,
+path filters). Inline suppressions: `<!-- tgw-disable TGW100 -->`,
+`<!-- tgw-disable-file TGW606 -->`, `// tgw-disable-next-line TGW400`.
+
+Exit codes: `0` no findings at or above the threshold, `1` findings present,
+`2` usage or input error, `3` internal error. The threshold is `--fail-on`.
+
+## Documentation
+
+- Rule reference: [docs/rules/index.md](docs/rules/index.md) — one page per
+  rule, generated from the rule registry.
+- AI agents: [llms.txt](llms.txt) and [llms-full.txt](llms-full.txt), plus the
+  ready `AGENTS.md` snippet in [docs/agents.md](docs/agents.md).
+- Machine output: `check --format json|sarif`, `rules --format json`.
 
 ## Development
 
 ```console
 cargo build --workspace
 cargo nextest run --workspace
+cargo test --doc --workspace
 cargo +nightly fmt --all --check
 cargo clippy --workspace --all-targets --all-features -- -D warnings -W clippy::pedantic -W clippy::nursery
 uv run --python 3.12 tools/zlib_parity.py   # size parity against real zlib
+cargo run -p xtask -- gen-docs              # regenerate rule docs and llms.txt
 ```
 
+Contributors and coding agents: see [AGENTS.md](AGENTS.md).
 Design documents: `widget-linter-spec.md`, `widget-linter-engineering.md`,
 `widget-linter-ai-native.md`.
 
