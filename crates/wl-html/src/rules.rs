@@ -8,7 +8,7 @@ use wl_profile::Profile;
 
 use crate::{
     HtmlDoc,
-    dom::{Attr, Element},
+    dom::{Attr, Element, NodeKind},
     scan::ScanEvent
 };
 
@@ -317,13 +317,14 @@ fn check_limits(
     element_count: u32,
     findings: &mut Vec<Finding>
 ) {
-    if element_count > profile.limits.dom_nodes {
+    let node_count = node_count(doc, element_count);
+    if node_count > profile.limits.dom_nodes {
         push(
             findings,
             "TGW303",
             None,
             format!(
-                "document has {element_count} elements, the limit is {}",
+                "document has {node_count} nodes, the limit is {}",
                 profile.limits.dom_nodes
             )
         );
@@ -339,7 +340,62 @@ fn check_limits(
                 profile.limits.text_value_units
             )
         );
+    } else {
+        let total = document_text_units(doc, source);
+        if total > u64::from(profile.limits.text_document_units) {
+            push(
+                findings,
+                "TGW304",
+                None,
+                format!(
+                    "document text has {total} UTF-16 units, the limit is {}",
+                    profile.limits.text_document_units
+                )
+            );
+        }
     }
+}
+
+/// Document nodes as the client counts them: elements, text runs and comments.
+fn node_count(doc: &HtmlDoc, elements: u32) -> u32 {
+    let comments = doc
+        .dom
+        .nodes
+        .iter()
+        .filter(|node| matches!(node.kind, NodeKind::Comment { .. }))
+        .count();
+    let texts = doc
+        .events
+        .iter()
+        .filter(|event| matches!(event, ScanEvent::Text { .. }))
+        .count();
+    elements
+        .saturating_add(u32::try_from(comments).unwrap_or(u32::MAX))
+        .saturating_add(u32::try_from(texts).unwrap_or(u32::MAX))
+}
+
+/// UTF-16 units of visible text plus `data-*` and `aria-*` values.
+fn document_text_units(doc: &HtmlDoc, source: &str) -> u64 {
+    let mut total = 0_u64;
+    for event in &doc.events {
+        if let ScanEvent::Text {
+            span
+        } = event
+        {
+            let from = usize::try_from(span.start).unwrap_or(source.len());
+            let to = usize::try_from(span.end).unwrap_or(source.len());
+            total += utf16_units(source.get(from..to).unwrap_or_default());
+        }
+    }
+    for (_, element) in doc.dom.elements() {
+        for attr in &element.attrs {
+            let local = attr.local();
+            if local.starts_with("data-") || local.starts_with("aria-") {
+                total += utf16_units(&attr.value);
+            }
+        }
+    }
+    total
 }
 
 /// Longest text run between markup, in UTF-16 units.

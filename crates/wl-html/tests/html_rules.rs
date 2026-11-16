@@ -190,6 +190,35 @@ fn tgw304_flags_huge_text() -> AppResult<()> {
 }
 
 #[test]
+fn tgw303_counts_text_and_comment_nodes() -> AppResult<()> {
+    let at_limit = format!("{}<!--c-->tail", "<i></i>".repeat(1998));
+    assert_eq!(
+        ids(&at_limit)?,
+        Vec::<&'static str>::new(),
+        "2000 nodes is at the limit"
+    );
+    let over = format!("{}<!--c-->tail", "<i></i>".repeat(1999));
+    assert_rule(&over, "TGW303")?;
+    Ok(())
+}
+
+#[test]
+fn tgw304_flags_document_text_total() -> AppResult<()> {
+    let chunk = "x".repeat(300);
+    let heavy = format!("<div>{chunk}</div>").repeat(200);
+    assert_rule(&heavy, "TGW304")?;
+    let at_limit = format!("<div>{chunk}</div>").repeat(160);
+    assert_eq!(
+        ids(&at_limit)?,
+        Vec::<&'static str>::new(),
+        "48000 units is at the limit"
+    );
+    let attrs = format!("<div data-x='{chunk}'></div>").repeat(200);
+    assert_rule(&attrs, "TGW304")?;
+    Ok(())
+}
+
+#[test]
 fn spans_point_at_the_offending_token() -> AppResult<()> {
     let html = "<div tabindex='0'>x</div>";
     let findings = check(html, &profile()?);
