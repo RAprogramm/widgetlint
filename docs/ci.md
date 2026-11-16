@@ -42,11 +42,11 @@ compiles a tool at run time.
 
 ## Authentication
 
-The repository is public, so no service needs a stored credential:
+The repository is public, so only Codecov needs a stored credential:
 
 | Service | Authentication |
 |---|---|
-| Codecov, coverage and test results | OIDC (`use_oidc: true`, `id-token: write`) |
+| Codecov, coverage and test results | the `CODECOV_TOKEN` repository secret |
 | CodSpeed, benchmarks | OIDC (`id-token: write`) |
 | GitHub Pages, releases, attestations | the built-in `GITHUB_TOKEN` |
 

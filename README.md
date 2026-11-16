@@ -169,6 +169,25 @@ Milestone M1 is complete: `check`, `size`, `verify`, `explain`, `rules`,
 (`pack`) and the client simulator (`sim`) follow per the roadmap in
 [widget-linter-spec.md](widget-linter-spec.md).
 
+## Coverage
+
+<details>
+<summary>Coverage graphs from Codecov</summary>
+
+**Sunburst** — the innermost circle is the whole project, then folders, then files:
+
+![codecov sunburst](https://codecov.io/gh/RAprogramm/widgetlint/graphs/sunburst.svg)
+
+**Grid** — one block per file, sized and colored by statements and coverage:
+
+![codecov grid](https://codecov.io/gh/RAprogramm/widgetlint/graphs/tree.svg)
+
+**Icicle** — project on top, then folders and files:
+
+![codecov icicle](https://codecov.io/gh/RAprogramm/widgetlint/graphs/icicle.svg)
+
+</details>
+
 ## Development
 
 ```console

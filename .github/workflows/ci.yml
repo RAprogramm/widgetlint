@@ -173,7 +173,6 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: read
-      id-token: write
     steps:
       - uses: actions/checkout@v7.0.1
         with:
@@ -190,13 +189,16 @@ jobs:
         with:
           files: lcov.info
           flags: rust
-          use_oidc: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
       - name: Upload test results to Codecov
-        uses: codecov/test-results-action@v1.2.1
+        uses: codecov/codecov-action@v7.1.1
         with:
-          files: target/nextest/junit.xml
+          files: target/nextest/default/junit.xml
           flags: rust
-          use_oidc: true
+          report_type: test_results
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
 
   zlib-parity:
     name: zlib parity
