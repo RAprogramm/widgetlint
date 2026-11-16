@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com>
 # SPDX-License-Identifier: MIT
 
-[nextest]
+[profile.default]
 fail-fast = true
 
-[junit]
+[profile.default.junit]
+path = "junit.xml"
 report-name = "widgetlint"
-path = "target/nextest/junit.xml"
