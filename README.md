@@ -134,14 +134,16 @@ The repository ships a composite action, so a widget project needs three
 lines and no installation:
 
 ```yaml
-- uses: RAprogramm/widgetlint@v1
+- uses: RAprogramm/widgetlint@v0.1
   with:
     path: widgets/
     fail-on: warn
 ```
 
 The action downloads the release binary for the runner, verifies its SHA-256
-checksum and checks the widgets. See [docs/action.md](docs/action.md).
+checksum, checks the widgets and reports every finding as a GitHub annotation
+right in the pull request. It also exposes the `verdict` and `findings`
+outputs. See [docs/action.md](docs/action.md).
 
 ## Rules
 

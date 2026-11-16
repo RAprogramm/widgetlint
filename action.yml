@@ -39,6 +39,14 @@ inputs:
     required: false
     default: RAprogramm/widgetlint
 
+outputs:
+  verdict:
+    description: "pass when no finding reached the fail-on threshold, fail otherwise"
+    value: ${{ steps.check.outputs.verdict }}
+  findings:
+    description: Number of findings reported for the checked widgets
+    value: ${{ steps.check.outputs.findings }}
+
 runs:
   using: composite
   steps:
@@ -117,6 +125,7 @@ runs:
         "bin=$binary" >> $env:GITHUB_OUTPUT
 
     - name: Check the widgets
+      id: check
       shell: bash
       env:
         WIDGETLINT_BIN_UNIX: ${{ steps.install-unix.outputs.bin }}
@@ -127,13 +136,13 @@ runs:
         INPUT_MIN_CONFIDENCE: ${{ inputs.min-confidence }}
         INPUT_CONFIG: ${{ inputs.config }}
       run: |
-        set -euo pipefail
+        set -uo pipefail
         if [ -n "${WIDGETLINT_BIN_UNIX}" ]; then
           BIN="${WIDGETLINT_BIN_UNIX}"
         else
           BIN="${WIDGETLINT_BIN_WINDOWS}"
         fi
-        ARGS=("check" "${INPUT_PATH}" "--fail-on" "${INPUT_FAIL_ON}")
+        ARGS=("check" "${INPUT_PATH}" "--fail-on" "${INPUT_FAIL_ON}" "--format" "json")
         if [ -n "${INPUT_CONFIG}" ]; then
           ARGS+=("--config" "${INPUT_CONFIG}")
         fi
@@ -143,4 +152,37 @@ runs:
         if [ -n "${INPUT_MIN_CONFIDENCE}" ]; then
           ARGS+=("--min-confidence" "${INPUT_MIN_CONFIDENCE}")
         fi
-        "${BIN}" "${ARGS[@]}"
+        REPORT="${RUNNER_TEMP}/widgetlint-report.json"
+        "${BIN}" "${ARGS[@]}" > "${REPORT}"
+        STATUS=$?
+        if [ ! -s "${REPORT}" ]; then
+          echo "::error::widgetlint produced no report"
+          exit "${STATUS}"
+        fi
+        jq -r '
+          .[] as $report | $report.diagnostics[]? |
+          (if .severity == "error" then "error"
+           elif .severity == "warn" then "warning"
+           else "notice" end) as $level |
+          "::\($level) file=\($report.input.path),line=\(.span.line),col=\(.span.col)::\(.id) \(.message)"
+        ' "${REPORT}" 2>/dev/null || true
+        {
+          echo "## widgetlint"
+          echo ""
+          echo "| Rule | Severity | Position | Finding |"
+          echo "|---|---|---|---|"
+          jq -r '
+            .[] as $report | $report.diagnostics[]? |
+            "| \(.id) | \(.severity) | \(.span.line):\(.span.col) | \(.message | gsub("\\|"; "\\\\|")) |"
+          ' "${REPORT}"
+          echo ""
+          jq -r '"Errors: \([.[].diagnostics[]? | select(.severity == "error")] | length) · Warnings: \([.[].diagnostics[]? | select(.severity == "warn")] | length) · Info: \([.[].diagnostics[]? | select(.severity == "info")] | length)"' "${REPORT}"
+        } >> "${GITHUB_STEP_SUMMARY}"
+        FINDINGS=$(jq '[.[].diagnostics[]?] | length' "${REPORT}")
+        if [ "${STATUS}" -eq 0 ]; then
+          echo "verdict=pass" >> "${GITHUB_OUTPUT}"
+        else
+          echo "verdict=fail" >> "${GITHUB_OUTPUT}"
+        fi
+        echo "findings=${FINDINGS}" >> "${GITHUB_OUTPUT}"
+        exit "${STATUS}"

@@ -89,7 +89,12 @@ generally available since September 2026.
 2. `version-bump` computes the next version with `git-cliff`, taking the
    greater of the computed version and the version in `Cargo.toml`, then
    commits the bumped manifest and lockfile, regenerates `CHANGELOG.md`, tags
-   the commit and pushes both.
+   the commit and pushes both. It also moves the floating tag of the action
+   (`v0.1` while the version is `0.x`, `v1` from `1.0` on) to the new
+   release, so `uses: RAprogramm/widgetlint@v0.1` always points at the
+   newest release of the line. The floating tags never enter the version
+   computation: `git-cliff` matches release tags with a strict semver
+   expression and `git describe` selects the same tags.
 3. `release-gate` verifies that the tag matches the manifest version.
 4. `build-release` builds the `widgetlint` binary for Linux, macOS and
    Windows, packs it with the license and the readme, signs the build

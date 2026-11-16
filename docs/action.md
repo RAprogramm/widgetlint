@@ -7,7 +7,7 @@ The repository ships a composite action that validates Telegram widgets
 without installing anything.
 
 ```yaml
-- uses: RAprogramm/widgetlint@v1
+- uses: RAprogramm/widgetlint@v0.1
   with:
     path: widgets/
     fail-on: warn
@@ -25,9 +25,29 @@ without installing anything.
 | `version` | `latest` | release version to install |
 | `repository` | `RAprogramm/widgetlint` | repository that publishes the releases |
 
-The step fails when a finding at or above `fail-on` remains. The output is
-the usual human report, so the log shows the rule id, the position and the
-fix hint.
+## Outputs
+
+| Output | Meaning |
+|---|---|
+| `verdict` | `pass` when no finding reached the `fail-on` threshold, `fail` otherwise |
+| `findings` | number of findings reported for the checked widgets |
+
+```yaml
+- uses: RAprogramm/widgetlint@v0.1
+  id: lint
+- run: echo "the widget verdict is ${{ steps.lint.outputs.verdict }}"
+```
+
+## What the step does
+
+1. Downloads the release archive that matches the runner and **verifies its
+   SHA-256 checksum** before unpacking it.
+2. Runs `widgetlint check` over the given path.
+3. Reports every finding as a **GitHub annotation**, so the problems appear
+   inline in the pull request diff:
+   `::warning file=widgets/card.html,line=12,col=3::TGW400 network API fetch is disabled in widgets`.
+4. Writes a **table of findings** to the job summary.
+5. Fails the step when a finding at or above `fail-on` remains.
 
 ## Example workflow
 
@@ -46,19 +66,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: RAprogramm/widgetlint@v1
+      - uses: RAprogramm/widgetlint@v0.1
         with:
           path: widgets/
           fail-on: warn
 ```
 
-## How the binary is installed
+## Version tags
 
-The action downloads the release archive that matches the runner, verifies
-the SHA-256 checksum published with the archive and puts the binary on the
-path. Nothing is compiled, and nothing is installed system-wide.
+The release pipeline publishes every version as a full semver tag and keeps a
+floating tag next to it:
 
-Supported runners:
+| Tag | Points at | Use it when |
+|---|---|---|
+| `v0.1.0` | the exact release | you want a reproducible pipeline |
+| `v0.1` | the newest `0.1.x` release | you want the fixes of the branch |
+| `v1` | the newest `1.x` release | the project is stable |
+
+The floating tag is a convention this repository maintains itself: the release
+job moves it to the new version on every release.
+
+```yaml
+- uses: RAprogramm/widgetlint@v0.1     # floating minor tag
+- uses: RAprogramm/widgetlint@v0.1.0   # exact version
+- uses: RAprogramm/widgetlint@<sha>   # exact commit
+```
+
+## Supported runners
 
 | Runner | Release |
 |---|---|
@@ -69,19 +103,20 @@ Supported runners:
 | `windows-latest`, `windows-2025` | `x86_64-pc-windows-msvc` |
 | `windows-11-arm` | `aarch64-pc-windows-msvc` |
 
-## Pinning
-
-For a reproducible pipeline, pin the action to a version tag or to a commit
-SHA:
-
-```yaml
-- uses: RAprogramm/widgetlint@v1.0.0
-```
-
-The repository publishes a workflow dependency lockfile for its own CI; the
-action itself is a single file without external dependencies.
-
 ## Permissions
 
 The action needs no write permission. It reads the release assets with the
 token of the workflow, so `permissions: contents: read` is enough.
+
+## Publishing to the Marketplace
+
+The action lives in the root of a public repository, which is what the
+Marketplace requires. The first release publishes it:
+
+1. Open the release of the first version.
+2. Tick **Publish this Action to the GitHub Marketplace**.
+3. Pick the primary category *Continuous Integration* and the secondary one
+   *Testing*.
+
+The Marketplace agreement of the account owner has to be accepted once
+before the checkbox becomes available.
