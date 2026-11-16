@@ -1,54 +1,166 @@
 <!DOCTYPE html>
 <!-- SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com> -->
 <!-- SPDX-License-Identifier: MIT -->
-<html lang="en">
+<html lang="en" data-theme="auto">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>widgetlint playground</title>
+  <title>widgetlint — validator for Telegram widgets</title>
+  <meta name="description" content="Check a Telegram Bot API 10.4 widget before you send it: sizes, stripped markup, unsupported CSS and disabled JavaScript. Everything runs in your browser.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#0b1220" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)">
+  <meta property="og:title" content="widgetlint — validator for Telegram widgets">
+  <meta property="og:description" content="Everything the Telegram client silently strips, caught before you send.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f6feb'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>widgetlint <span id="version" class="dim"></span></h1>
-    <p class="dim">Validator for Telegram Bot API 10.4 widgets — everything the client
-      silently strips, caught before sending. Runs fully in your browser.</p>
+  <a class="skip-link" href="#editor">Skip to the editor</a>
+
+  <header class="masthead">
+    <div class="masthead__brand">
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="0 0 32 32" width="28" height="28">
+          <rect width="32" height="32" rx="8" fill="currentColor"></rect>
+          <path d="M9 16.5l4.5 4.5L23 11.5" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+      </span>
+      <div>
+        <h1>widgetlint <span id="version" class="pill pill--muted">…</span></h1>
+        <p class="masthead__tagline">Validator for Telegram Bot API 10.4 widgets</p>
+      </div>
+    </div>
+    <nav class="masthead__nav" aria-label="Site">
+      <a href="https://github.com/RAprogramm/widgetlint#rules" rel="noreferrer">Rules</a>
+      <a href="https://github.com/RAprogramm/widgetlint" rel="noreferrer">GitHub</a>
+      <button id="theme-toggle" class="ghost-button" type="button" aria-label="Switch the colour theme">
+        <span id="theme-label">Auto</span>
+      </button>
+    </nav>
   </header>
-  <main>
-    <section class="editor">
+
+  <section class="hero">
+    <p class="hero__lead">
+      Everything the Telegram client <strong>silently strips</strong> and everything the server
+      <strong>refuses</strong> — caught before you send. Nothing leaves your browser.
+    </p>
+    <dl class="hero__facts">
+      <div><dt>Widget limit</dt><dd>32 768 B raw · 4 096 B zlib-9</dd></div>
+      <div><dt>Rules</dt><dd id="fact-rules">…</dd></div>
+      <div><dt>Where it runs</dt><dd>WebAssembly, offline</dd></div>
+    </dl>
+  </section>
+
+  <main class="workspace">
+    <section class="panel panel--editor" aria-labelledby="editor-title">
+      <div class="panel__head">
+        <h2 id="editor-title">Your widget</h2>
+        <div class="panel__actions">
+          <label class="field">
+            <span class="field__label">Samples</span>
+            <select id="sample">
+              <option value="">Choose…</option>
+              <option value="broken">Broken widget</option>
+              <option value="clean">Clean widget</option>
+              <option value="heavy">Too heavy</option>
+              <option value="css">Unsupported CSS</option>
+            </select>
+          </label>
+          <button id="open-file" class="ghost-button" type="button">Open file…</button>
+          <input id="file-input" type="file" accept=".html,.htm,text/html" hidden>
+        </div>
+      </div>
+
+      <div class="editor">
+        <pre id="gutter" class="editor__gutter" aria-hidden="true"></pre>
+        <textarea id="editor" spellcheck="false" autocomplete="off" autocapitalize="off"
+          aria-label="Widget HTML source"
+          placeholder="&lt;div class=&quot;card&quot;&gt;Hello&lt;/div&gt;"></textarea>
+      </div>
+
       <div class="toolbar">
-        <label>fail on
+        <label class="field">
+          <span class="field__label">Fail on</span>
           <select id="fail-on">
             <option value="error" selected>error</option>
             <option value="warn">warn</option>
             <option value="info">info</option>
           </select>
         </label>
-        <span id="size" class="dim"></span>
+        <span id="size" class="toolbar__size"></span>
+        <div class="toolbar__spacer"></div>
+        <button id="copy-report" class="ghost-button" type="button">Copy JSON report</button>
+        <button id="check" class="primary-button" type="button">Check widget</button>
       </div>
-      <textarea id="source" spellcheck="false" placeholder="&lt;div class=&quot;card&quot;&gt;Hello&lt;/div&gt;"></textarea>
     </section>
-    <section class="report">
-      <div id="verdict" class="verdict">loading…</div>
-      <div id="reason" class="reason"></div>
-      <div id="budget" class="budget" hidden>
-        <div class="bar"><div id="bar-fill"></div><span id="bar-budget"></span></div>
-        <div id="budget-text" class="dim"></div>
+
+    <section class="panel panel--report" aria-labelledby="report-title">
+      <div class="panel__head">
+        <h2 id="report-title">Report</h2>
+        <span id="ruleset" class="pill pill--muted"></span>
       </div>
-      <ul id="findings"></ul>
-      <div id="more" class="dim"></div>
-      <div id="action" class="action" hidden></div>
-      <details id="caveats-box" hidden>
-        <summary class="dim">what this check does not cover</summary>
+
+      <div id="verdict" class="verdict verdict--pending" role="status" aria-live="polite">
+        <span class="verdict__label">Loading the checker…</span>
+      </div>
+      <p id="reason" class="reason"></p>
+
+      <div id="budget" class="meter" hidden>
+        <div class="meter__head">
+          <span class="meter__title">Compressed size</span>
+          <span id="budget-text" class="meter__value"></span>
+        </div>
+        <div class="meter__track" role="img" aria-label="Compressed size against the limit">
+          <div id="bar-zlib" class="meter__fill"></div>
+          <div id="bar-budget" class="meter__mark meter__mark--budget"></div>
+          <div id="bar-limit" class="meter__mark meter__mark--limit"></div>
+        </div>
+        <div class="meter__legend">
+          <span>zlib-9 <b id="legend-zlib">0 B</b></span>
+          <span>budget <b id="legend-budget">0 B</b></span>
+          <span>limit <b id="legend-limit">0 B</b></span>
+        </div>
+      </div>
+
+      <div id="action" class="next-action" hidden></div>
+
+      <h3 class="section-title">Findings <span id="findings-count" class="pill pill--muted">0</span></h3>
+      <ul id="findings" class="findings"></ul>
+      <p id="empty-state" class="empty">Nothing to report yet — paste a widget on the left.</p>
+
+      <details id="caveats-box" class="caveats" hidden>
+        <summary>What this check does not cover</summary>
         <ul id="caveats"></ul>
       </details>
     </section>
   </main>
-  <footer class="dim">
-    compressed size in the browser uses the pure-Rust zlib backend and may differ
-    from the reference by a byte or two ·
-    <a href="https://github.com/RAprogramm/widgetlint">widgetlint on GitHub</a>
+
+  <aside id="rule-drawer" class="drawer" hidden aria-labelledby="drawer-title">
+    <div class="drawer__panel" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+      <div class="drawer__head">
+        <h2 id="drawer-title">Rule</h2>
+        <button id="drawer-close" class="ghost-button" type="button" aria-label="Close">Close</button>
+      </div>
+      <div id="drawer-body" class="drawer__body"></div>
+    </div>
+  </aside>
+
+  <footer class="footer">
+    <p>
+      The compressed size in the browser uses the pure-Rust zlib backend and may differ from the
+      reference by a byte or two. Every finding comes from static analysis.
+    </p>
+    <p class="footer__links">
+      <a href="https://github.com/RAprogramm/widgetlint" rel="noreferrer">Source</a>
+      <a href="https://github.com/RAprogramm/widgetlint#rules" rel="noreferrer">Rule catalog</a>
+      <a href="https://github.com/sponsors/RAprogramm" rel="noreferrer">Support the project</a>
+    </p>
   </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
   <script type="module" src="app.js"></script>
 </body>
 </html>

@@ -1,117 +1,442 @@
 // SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com>
 // SPDX-License-Identifier: MIT
 
-// Playground logic: debounced live check through the wasm pipeline. All report
-// text is inserted with textContent, never as HTML, so widget content can
-// never inject markup or instructions into the page.
+// Playground logic: a debounced live check through the wasm pipeline.
+//
+// Every text that comes from the widget is inserted with textContent, never
+// as markup, so widget content can never inject HTML or instructions into the
+// page.
 
-import init, { check_agent, version_json } from './pkg/wl_wasm.js';
+import init, { check_agent, rules_json, version_json } from './pkg/wl_wasm.js';
 
-const source = document.getElementById('source');
-const failOn = document.getElementById('fail-on');
-const verdictEl = document.getElementById('verdict');
-const reasonEl = document.getElementById('reason');
-const budgetEl = document.getElementById('budget');
-const barFill = document.getElementById('bar-fill');
-const budgetText = document.getElementById('budget-text');
-const findingsEl = document.getElementById('findings');
-const moreEl = document.getElementById('more');
-const actionEl = document.getElementById('action');
-const caveatsBox = document.getElementById('caveats-box');
-const caveatsEl = document.getElementById('caveats');
-const sizeEl = document.getElementById('size');
-const versionEl = document.getElementById('version');
+const SAMPLES = {
+  broken: `<div class="card">
+  <h1>Tap me</h1>
+  <input type="text" placeholder="your name">
+  <script>
+    fetch("https://example.com/data");
+  </script>
+</div>`,
+  clean: `<div class="card">
+  <style>
+    .card { color: #101828; font: 16px system-ui; }
+  </style>
+  <h1>Tap me</h1>
+  <button class="cta">Send</button>
+  <script>
+    const button = document.querySelector(".cta");
+    button.addEventListener("click", () => {
+      Telegram.WebApp.sendData("tapped");
+    });
+  </script>
+</div>`,
+  heavy: `<div class="card">
+  <style>
+${"    .pad { padding: 8px; }\n".repeat(120)}
+  </style>
+  <p>${"padding makes the compressed size grow. ".repeat(80)}</p>
+</div>`,
+  css: `<div class="card">
+  <style>
+    .card { position: sticky; top: 0; transform: rotate(3deg); }
+  </style>
+  <p>Unsupported features</p>
+</div>`
+};
 
-const ready = init();
+const THEME_ORDER = ['auto', 'light', 'dark'];
 
-function el(tag, className, text) {
+const elements = {
+  editor: document.getElementById('editor'),
+  gutter: document.getElementById('gutter'),
+  failOn: document.getElementById('fail-on'),
+  sample: document.getElementById('sample'),
+  openFile: document.getElementById('open-file'),
+  fileInput: document.getElementById('file-input'),
+  check: document.getElementById('check'),
+  copyReport: document.getElementById('copy-report'),
+  verdict: document.getElementById('verdict'),
+  reason: document.getElementById('reason'),
+  budget: document.getElementById('budget'),
+  budgetText: document.getElementById('budget-text'),
+  barZlib: document.getElementById('bar-zlib'),
+  barBudget: document.getElementById('bar-budget'),
+  barLimit: document.getElementById('bar-limit'),
+  legendZlib: document.getElementById('legend-zlib'),
+  legendBudget: document.getElementById('legend-budget'),
+  legendLimit: document.getElementById('legend-limit'),
+  action: document.getElementById('action'),
+  findings: document.getElementById('findings'),
+  findingsCount: document.getElementById('findings-count'),
+  emptyState: document.getElementById('empty-state'),
+  caveatsBox: document.getElementById('caveats-box'),
+  caveats: document.getElementById('caveats'),
+  version: document.getElementById('version'),
+  ruleset: document.getElementById('ruleset'),
+  factRules: document.getElementById('fact-rules'),
+  themeToggle: document.getElementById('theme-toggle'),
+  themeLabel: document.getElementById('theme-label'),
+  drawer: document.getElementById('rule-drawer'),
+  drawerTitle: document.getElementById('drawer-title'),
+  drawerBody: document.getElementById('drawer-body'),
+  drawerClose: document.getElementById('drawer-close'),
+  toast: document.getElementById('toast')
+};
+
+let rules = new Map();
+let lastReport = null;
+let timer = null;
+let toastTimer = null;
+
+function formatBytes(value) {
+  if (value < 1024) {
+    return `${value} B`;
+  }
+  return `${(value / 1024).toFixed(1)} KiB`;
+}
+
+function text(tag, className, content) {
   const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text !== undefined) node.textContent = text;
+  if (className) {
+    node.className = className;
+  }
+  if (content !== undefined) {
+    node.textContent = content;
+  }
   return node;
 }
 
-function renderFinding(finding) {
-  const li = el('li', finding.sev);
-  const head = el('div', 'finding-head');
-  head.append(el('span', 'rule', finding.id));
-  head.append(el('span', 'sev', finding.sev));
-  if (finding.repeat > 1) head.append(el('span', 'repeat', `×${finding.repeat}`));
-  if (finding.where) {
-    head.append(el('span', 'where', `${finding.where.region} ${finding.where.line}:${finding.where.col}`));
+function showToast(message) {
+  elements.toast.textContent = message;
+  elements.toast.hidden = false;
+  window.clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => {
+    elements.toast.hidden = true;
+  }, 2200);
+}
+
+function renderGutter() {
+  const lines = elements.editor.value.split('\n').length;
+  const numbers = [];
+  for (let index = 1; index <= lines; index += 1) {
+    numbers.push(index);
   }
-  li.append(head);
-  li.append(el('p', 'msg', finding.msg));
-  if (finding.fix && finding.fix.hint) li.append(el('p', 'hint', `help: ${finding.fix.hint}`));
-  return li;
+  elements.gutter.textContent = numbers.join('\n');
+  elements.gutter.scrollTop = elements.editor.scrollTop;
+}
+
+function severityClass(severity) {
+  if (severity === 'error') {
+    return 'error';
+  }
+  if (severity === 'warn') {
+    return 'warn';
+  }
+  return 'info';
+}
+
+function renderVerdict(report) {
+  const passed = report.verdict === 'pass';
+  elements.verdict.className = `verdict verdict--${passed ? 'pass' : 'fail'}`;
+  elements.verdict.replaceChildren();
+  const icon = text('span', 'verdict__icon', passed ? '✓' : '!');
+  icon.setAttribute('aria-hidden', 'true');
+  elements.verdict.append(icon, text('span', '', passed
+    ? 'Looks good — no blocking findings'
+    : 'This widget will not work as written'));
+  elements.reason.textContent = report.reason;
+}
+
+function renderBudget(report) {
+  const budget = report.budget;
+  const scale = Math.max(budget.limit, budget.zlib9, 1);
+  const percent = (value) => `${Math.min(100, (value / scale) * 100)}%`;
+  elements.budget.hidden = false;
+  elements.barZlib.style.width = percent(budget.zlib9);
+  elements.barZlib.classList.toggle('meter__fill--over', budget.over_by > 0);
+  elements.barBudget.style.left = percent(budget.target);
+  elements.barLimit.style.left = percent(budget.limit);
+  elements.legendZlib.textContent = formatBytes(budget.zlib9);
+  elements.legendBudget.textContent = formatBytes(budget.target);
+  elements.legendLimit.textContent = formatBytes(budget.limit);
+  elements.budgetText.textContent = budget.over_by > 0
+    ? `${formatBytes(budget.over_by)} over the limit`
+    : `${formatBytes(budget.limit - budget.zlib9)} of headroom`;
+}
+
+function renderFindings(report) {
+  elements.findings.replaceChildren();
+  elements.findingsCount.textContent = String(report.findings.length);
+  elements.emptyState.hidden = report.findings.length > 0;
+  for (const finding of report.findings) {
+    const item = text('li', `finding finding--${severityClass(finding.sev)}`);
+    const head = text('div', 'finding__head');
+    head.append(text('span', `pill pill--${severityClass(finding.sev)}`, finding.sev));
+    const id = text('button', 'finding__id', finding.id);
+    id.type = 'button';
+    id.addEventListener('click', () => openRule(finding.id));
+    head.append(id);
+    if (finding.where) {
+      head.append(text('span', 'pill pill--muted', `line ${finding.where.line}`));
+    }
+    if (finding.repeat > 1) {
+      head.append(text('span', 'pill pill--muted', `×${finding.repeat}`));
+    }
+    item.append(head);
+    item.append(text('p', 'finding__message', finding.msg));
+    if (finding.fix && finding.fix.hint) {
+      item.append(text('p', 'finding__fix', finding.fix.hint));
+    }
+    const meta = text('div', 'finding__meta');
+    meta.append(text('span', `pill pill--${finding.conf}`, finding.conf));
+    meta.append(text('span', '', finding.why));
+    item.append(meta);
+    elements.findings.append(item);
+  }
+}
+
+function renderCaveats(report) {
+  elements.caveats.replaceChildren();
+  elements.caveatsBox.hidden = !report.caveats || report.caveats.length === 0;
+  for (const caveat of report.caveats || []) {
+    elements.caveats.append(text('li', '', caveat));
+  }
 }
 
 function render(report) {
-  verdictEl.textContent = report.verdict.toUpperCase();
-  verdictEl.className = `verdict ${report.verdict}`;
-  reasonEl.textContent = report.reason;
-  budgetEl.hidden = false;
-  const pct = Math.min(100, (report.budget.zlib9 / report.budget.limit) * 100);
-  barFill.style.width = `${pct}%`;
-  barFill.className = report.budget.over_by > 0 ? 'over' : '';
-  budgetText.textContent =
-    `${report.budget.zlib9} B / ${report.budget.limit} B zlib-9 ` +
-    `(budget ${report.budget.target} B)` +
-    (report.budget.over_by > 0 ? ` — over by ${report.budget.over_by} B` : '');
-  findingsEl.textContent = '';
-  for (const finding of report.findings) findingsEl.append(renderFinding(finding));
-  moreEl.textContent = report.truncated > 0
-    ? `+ ${report.truncated} more finding(s) hidden; run the CLI for the full list`
-    : '';
-  actionEl.hidden = false;
-  actionEl.textContent = report.next_action;
-  caveatsEl.textContent = '';
-  for (const caveat of report.caveats) caveatsEl.append(el('li', '', caveat));
-  caveatsBox.hidden = report.caveats.length === 0;
-  sizeEl.textContent = `${report.budget.zlib9} B zlib-9`;
+  lastReport = report;
+  renderVerdict(report);
+  renderBudget(report);
+  renderFindings(report);
+  renderCaveats(report);
+  elements.action.hidden = !report.next_action;
+  elements.action.textContent = report.next_action;
+  const errors = report.counts.error;
+  const warnings = report.counts.warn;
+  elements.check.textContent = 'Check widget';
+  elements.check.setAttribute(
+    'aria-label',
+    `Check widget: ${errors} errors, ${warnings} warnings`
+  );
 }
 
-function renderError(message) {
-  verdictEl.textContent = 'INPUT ERROR';
-  verdictEl.className = 'verdict error';
-  reasonEl.textContent = message;
-  budgetEl.hidden = true;
-  findingsEl.textContent = '';
-  moreEl.textContent = '';
-  actionEl.hidden = true;
-  caveatsBox.hidden = true;
-  sizeEl.textContent = '';
+function reportError(message) {
+  elements.verdict.className = 'verdict verdict--fail';
+  elements.verdict.textContent = 'The checker could not read this widget';
+  elements.reason.textContent = message;
+  elements.findings.replaceChildren();
+  elements.findingsCount.textContent = '0';
+  elements.emptyState.hidden = true;
+  elements.action.hidden = true;
 }
 
-let timer;
-function schedule() {
-  clearTimeout(timer);
-  timer = setTimeout(run, 250);
-}
-
-async function run() {
-  await ready;
-  if (source.value.trim() === '') {
-    verdictEl.textContent = 'waiting for input';
-    verdictEl.className = 'verdict';
-    reasonEl.textContent = '';
+function check() {
+  const source = elements.editor.value;
+  if (source.trim() === '') {
+    elements.verdict.className = 'verdict verdict--pending';
+    elements.verdict.textContent = 'Nothing to check yet';
+    elements.reason.textContent = 'Paste a widget on the left.';
+    elements.findings.replaceChildren();
+    elements.findingsCount.textContent = '0';
+    elements.emptyState.hidden = false;
+    elements.action.hidden = true;
+    elements.budget.hidden = true;
+    lastReport = null;
     return;
   }
   try {
-    render(JSON.parse(check_agent(source.value, failOn.value)));
+    render(JSON.parse(check_agent(source, elements.failOn.value)));
   } catch (error) {
-    renderError(String(error.message ?? error));
+    reportError(String(error));
   }
 }
 
-source.addEventListener('input', schedule);
-failOn.addEventListener('change', run);
+function scheduleCheck() {
+  window.clearTimeout(timer);
+  timer = window.setTimeout(check, 220);
+}
 
-ready.then(() => {
-  try {
-    versionEl.textContent = JSON.parse(version_json()).version;
-  } catch {
-    versionEl.textContent = '';
+function openRule(ruleId) {
+  const rule = rules.get(ruleId);
+  elements.drawerBody.replaceChildren();
+  if (!rule) {
+    elements.drawerTitle.textContent = ruleId;
+    elements.drawerBody.append(text('p', '', 'No metadata for this rule.'));
+  } else {
+    elements.drawerTitle.textContent = `${rule.id} — ${rule.title}`;
+    const list = text('dl');
+    const add = (label, value) => {
+      list.append(text('dt', '', label));
+      list.append(text('dd', '', value));
+    };
+    add('Severity', rule.severity);
+    add('Confidence', rule.confidence);
+    if (rule.help) {
+      add('How to fix', rule.help);
+    }
+    const link = text('a', '', 'Telegram widget specification');
+    link.href = rule.spec;
+    link.rel = 'noreferrer';
+    list.append(text('dt', '', 'Specification'));
+    const holder = text('dd');
+    holder.append(link);
+    list.append(holder);
+    elements.drawerBody.append(list);
   }
-  run();
-});
+  elements.drawer.hidden = false;
+  elements.drawerClose.focus();
+}
+
+function closeRule() {
+  elements.drawer.hidden = true;
+}
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  elements.themeLabel.textContent = theme[0].toUpperCase() + theme.slice(1);
+  window.localStorage.setItem('widgetlint-theme', theme);
+}
+
+function toggleTheme() {
+  const current = document.documentElement.dataset.theme || 'auto';
+  const next = THEME_ORDER[(THEME_ORDER.indexOf(current) + 1) % THEME_ORDER.length];
+  applyTheme(next);
+}
+
+function installTabHandling() {
+  elements.editor.addEventListener('keydown', (event) => {
+    if (event.key !== 'Tab') {
+      return;
+    }
+    event.preventDefault();
+    const start = elements.editor.selectionStart;
+    const end = elements.editor.selectionEnd;
+    elements.editor.setRangeText('  ', start, end, 'end');
+    scheduleCheck();
+  });
+}
+
+function installShortcuts() {
+  document.addEventListener('keydown', (event) => {
+    const meta = event.ctrlKey || event.metaKey;
+    if (meta && event.key === 'Enter') {
+      event.preventDefault();
+      check();
+    }
+    if (meta && event.key === 'k') {
+      event.preventDefault();
+      elements.editor.focus();
+    }
+    if (event.key === 'Escape' && !elements.drawer.hidden) {
+      closeRule();
+    }
+  });
+}
+
+function installFileLoading() {
+  elements.openFile.addEventListener('click', () => elements.fileInput.click());
+  elements.fileInput.addEventListener('change', () => {
+    const file = elements.fileInput.files && elements.fileInput.files[0];
+    if (file) {
+      readFile(file);
+    }
+  });
+  const drop = (event) => {
+    event.preventDefault();
+    const file = event.dataTransfer && event.dataTransfer.files[0];
+    if (file) {
+      readFile(file);
+    }
+  };
+  elements.editor.addEventListener('dragover', drop);
+  elements.editor.addEventListener('drop', drop);
+}
+
+function readFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    elements.editor.value = String(reader.result || '');
+    renderGutter();
+    check();
+  };
+  reader.readAsText(file);
+}
+
+function installCopy() {
+  elements.copyReport.addEventListener('click', async () => {
+    if (!lastReport) {
+      showToast('Nothing to copy yet');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(lastReport, null, 2));
+      showToast('Report copied as JSON');
+    } catch (error) {
+      showToast(`Copy failed: ${error}`);
+    }
+  });
+}
+
+function installSamples() {
+  elements.sample.addEventListener('change', () => {
+    const key = elements.sample.value;
+    if (!key || !SAMPLES[key]) {
+      return;
+    }
+    elements.editor.value = SAMPLES[key];
+    elements.sample.value = '';
+    renderGutter();
+    check();
+  });
+}
+
+async function boot() {
+  applyTheme(window.localStorage.getItem('widgetlint-theme') || 'auto');
+  elements.themeToggle.addEventListener('click', toggleTheme);
+  elements.drawerClose.addEventListener('click', closeRule);
+  elements.drawer.addEventListener('click', (event) => {
+    if (event.target === elements.drawer) {
+      closeRule();
+    }
+  });
+  elements.editor.addEventListener('input', () => {
+    renderGutter();
+    scheduleCheck();
+  });
+  elements.editor.addEventListener('scroll', () => {
+    elements.gutter.scrollTop = elements.editor.scrollTop;
+  });
+  elements.failOn.addEventListener('change', check);
+  elements.check.addEventListener('click', check);
+  installTabHandling();
+  installShortcuts();
+  installFileLoading();
+  installCopy();
+  installSamples();
+  renderGutter();
+
+  try {
+    await init();
+  } catch (error) {
+    reportError(`The WebAssembly module failed to load: ${error}`);
+    return;
+  }
+
+  const identity = JSON.parse(version_json());
+  elements.version.textContent = `v${identity.version}`;
+  elements.ruleset.textContent = `ruleset ${identity.ruleset.slice(-8)}`;
+  elements.ruleset.title = identity.ruleset;
+  elements.factRules.textContent = `${identity.rules} rules · profile ${identity.profile}`;
+
+  try {
+    rules = new Map(JSON.parse(rules_json()).map((rule) => [rule.id, rule]));
+  } catch (error) {
+    rules = new Map();
+  }
+
+  elements.editor.value = SAMPLES.broken;
+  renderGutter();
+  check();
+}
+
+boot();

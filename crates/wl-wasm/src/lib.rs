@@ -72,3 +72,27 @@ pub fn version_json() -> Result<String, JsError> {
     });
     serde_json::to_string(&json).map_err(|error| JsError::new(&error.to_string()))
 }
+
+/// Returns the rule catalog as JSON: id, severity, confidence, title, help and
+/// the specification link of every known rule.
+///
+/// # Errors
+///
+/// [`JsError`] if serialization fails.
+#[wasm_bindgen]
+pub fn rules_json() -> Result<String, JsError> {
+    let rules: Vec<_> = wl_core::rule::all()
+        .into_iter()
+        .map(|rule| {
+            serde_json::json!({
+                "id": rule.id,
+                "severity": rule.default_severity.as_str(),
+                "confidence": rule.confidence.as_str(),
+                "title": rule.title,
+                "help": rule.help,
+                "spec": rule.spec,
+            })
+        })
+        .collect();
+    serde_json::to_string(&rules).map_err(|error| JsError::new(&error.to_string()))
+}
