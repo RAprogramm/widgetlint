@@ -35,9 +35,15 @@ pub enum Command {
     Rules(RulesArgs),
     /// Print the JSON Schema of the agent report
     Schema(SchemaArgs),
+    /// Serve the linter over the Model Context Protocol on stdio
+    Mcp(McpArgs),
     /// Print tool, schema and ruleset version
     Version(VersionArgs)
 }
+
+/// Arguments of the `mcp` subcommand.
+#[derive(Debug, Args)]
+pub struct McpArgs {}
 
 /// Arguments of the `check` subcommand.
 #[derive(Debug, Args)]

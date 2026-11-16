@@ -26,6 +26,7 @@ pub fn run() -> ExitCode {
         Command::Rules(args) => command::rules::run(&args),
         Command::Verify(args) => command::verify::run(&args),
         Command::Schema(args) => command::schema::run(&args),
+        Command::Mcp(args) => command::mcp::run(&args),
         Command::Version(args) => Ok(command::version::run(&args))
     };
     match outcome {

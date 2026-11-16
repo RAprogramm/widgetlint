@@ -31,3 +31,21 @@ It tells any coding agent how to validate widget work before finishing.
   controls and remote `<img src>` never work in widgets; the linter explains
   the supported alternative for each.
 ```
+
+## MCP server (optional)
+
+When the agent has no shell, `widgetlint mcp` serves the same checks over the
+Model Context Protocol on stdio:
+
+```json
+{
+  "mcpServers": {
+    "widgetlint": { "command": "widgetlint", "args": ["mcp"] }
+  }
+}
+```
+
+The tools are `check` (the full agent report), `verify` (the verdict and the
+next action), `explain` (one rule), `rules` (the catalog) and `schema` (the
+report contract). The widget source is a tool parameter; the server reads
+nothing from disk.

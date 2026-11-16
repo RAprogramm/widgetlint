@@ -1,0 +1,25 @@
+# SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com>
+# SPDX-License-Identifier: MIT
+
+[package]
+name = "wl-mcp"
+description = "Model Context Protocol server exposing the widgetlint pipeline"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+masterror.workspace = true
+rmcp.workspace = true
+schemars.workspace = true
+serde = { workspace = true }
+serde_json.workspace = true
+tokio.workspace = true
+wl-check.workspace = true
+wl-core.workspace = true
+wl-profile.workspace = true

@@ -10,6 +10,7 @@ members = [
   "crates/wl-css",
   "crates/wl-html",
   "crates/wl-js",
+  "crates/wl-mcp",
   "crates/wl-profile",
   "crates/wl-size",
   "crates/xtask",
@@ -35,15 +36,23 @@ oxc_ast = "0.158.0"
 oxc_ast_visit = "0.158.0"
 oxc_parser = "0.158.0"
 oxc_span = "0.158.0"
+rmcp = { version = "3.10", default-features = false, features = [
+  "macros",
+  "server",
+  "transport-io"
+] }
+schemars = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tendril = "0.5"
+tokio = { version = "1", features = ["io-std", "macros", "rt-multi-thread"] }
 toml = "1"
 wl-core = { path = "crates/wl-core", version = "0.1.0" }
 wl-check = { path = "crates/wl-check", version = "0.1.0" }
 wl-css = { path = "crates/wl-css", version = "0.1.0" }
 wl-html = { path = "crates/wl-html", version = "0.1.0" }
 wl-js = { path = "crates/wl-js", version = "0.1.0" }
+wl-mcp = { path = "crates/wl-mcp", version = "0.1.0" }
 wl-profile = { path = "crates/wl-profile", version = "0.1.0" }
 wl-size = { path = "crates/wl-size", version = "0.1.0" }
 

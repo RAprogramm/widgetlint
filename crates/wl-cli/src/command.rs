@@ -5,6 +5,7 @@
 
 pub mod check;
 pub mod explain;
+pub mod mcp;
 pub mod rules;
 pub mod schema;
 pub mod size;

@@ -293,3 +293,41 @@ mod tests {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod filesystem_tests {
+    use super::*;
+
+    fn root(name: &str) -> std::path::PathBuf {
+        let root = std::env::temp_dir().join(format!("xtask-{name}-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        root
+    }
+
+    #[test]
+    fn a_file_in_place_of_a_directory_stops_the_generation() -> AppResult<()> {
+        let root = root("blocked");
+        std::fs::write(&root, b"not a directory")?;
+        let error = run_at(&root, false).expect_err("a file cannot become a directory");
+        assert!(
+            error.to_string().contains("cannot create"),
+            "message: {error}"
+        );
+        let _ = std::fs::remove_dir_all(&root);
+        Ok(())
+    }
+
+    #[test]
+    fn a_directory_in_place_of_a_file_stops_the_generation() -> AppResult<()> {
+        let root = root("blocked-file");
+        let target = root.join("docs/rules/index.md");
+        std::fs::create_dir_all(&target)?;
+        let error = run_at(&root, false).expect_err("a directory cannot be written");
+        assert!(
+            error.to_string().contains("cannot write"),
+            "message: {error}"
+        );
+        let _ = std::fs::remove_dir_all(&root);
+        Ok(())
+    }
+}

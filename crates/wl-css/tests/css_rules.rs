@@ -324,3 +324,11 @@ fn scanner_survives_strings_escapes_and_stray_semicolons() -> AppResult<()> {
     assert_rule("p { font-family: local(x), serif }", "TGW215")?;
     Ok(())
 }
+
+#[test]
+fn a_quoted_string_inside_a_function_call_does_not_shift_the_arguments() -> AppResult<()> {
+    let plain = ids(".box { transform: translate(1px, 20px) }")?;
+    let quoted = ids(".box { transform: translate(1px, \"a)b\") }")?;
+    assert_eq!(plain, quoted);
+    Ok(())
+}

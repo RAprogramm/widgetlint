@@ -102,6 +102,31 @@ ready agent instructions from [docs/agents.md](docs/agents.md) into your
 widget project, and feed your model [llms.txt](llms.txt) or
 [llms-full.txt](llms-full.txt) for the full rule reference.
 
+### MCP server
+
+Agents without a shell can drive the linter over the Model Context Protocol.
+The server is part of the same binary and speaks over stdio:
+
+```console
+widgetlint mcp
+```
+
+```json
+{
+  "mcpServers": {
+    "widgetlint": {
+      "command": "widgetlint",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+It exposes five tools: `check` (the full agent report), `verify` (the verdict
+and the next action), `explain` (one rule), `rules` (the catalog) and
+`schema` (the JSON Schema of the report). Nothing is read from disk: every
+widget arrives as a tool parameter. See [docs/mcp.md](docs/mcp.md).
+
 ## Rules
 
 50 rules, all derived from the official
