@@ -11,7 +11,11 @@ Everything the client silently strips and everything the server refuses —
 caught before you send.
 
 [![CI](https://github.com/RAprogramm/widgetlint/actions/workflows/ci.yml/badge.svg)](https://github.com/RAprogramm/widgetlint/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/RAprogramm/widgetlint/branch/main/graph/badge.svg)](https://codecov.io/gh/RAprogramm/widgetlint)
+[![CodSpeed](https://img.shields.io/endpoint?url=https://app.codspeed.io//badge.json)](https://app.codspeed.io/RAprogramm/widgetlint?utm_source=badge)
+[![release](https://img.shields.io/github/v/release/RAprogramm/widgetlint?label=release)](https://github.com/RAprogramm/widgetlint/releases/latest)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![REUSE](https://api.reuse.software/badge/github.com/RAprogramm/widgetlint)](https://api.reuse.software/info/github.com/RAprogramm/widgetlint)
 [![MSRV](https://img.shields.io/badge/rust-1.100%2B-orange.svg)](rust-toolchain.toml)
 [![rules](https://img.shields.io/badge/rules-50-green)](docs/rules/index.md)
 [![playground](https://img.shields.io/badge/playground-live-informational)](https://raprogramm.github.io/widgetlint/)
@@ -146,6 +150,21 @@ python3 -m http.server -d playground 8000    # then open http://localhost:8000
 Contributors and coding agents: see [AGENTS.md](AGENTS.md).
 Design documents: `widget-linter-spec.md`, `widget-linter-engineering.md`,
 `widget-linter-ai-native.md`.
+
+The CI pipeline, the release flow and the repository secrets are described in
+[docs/ci.md](docs/ci.md) and [SECRETS_SETUP.md](SECRETS_SETUP.md).
+
+## Support
+
+`widgetlint` is free and open source. If it saves you from debugging silent
+widget failures, you can support its maintenance:
+
+- ⭐ Star the repository — it is the cheapest way to help.
+- 🐛 Report a widget that the linter misses. A real broken widget is the most
+  valuable input the project can get.
+- 💖 [Sponsor RAprogramm on GitHub](https://github.com/sponsors/RAprogramm).
+  Sponsorship funds the time spent on new rules, on tracking Telegram Bot API
+  updates, and on keeping the WASM playground alive.
 
 ## License
 
