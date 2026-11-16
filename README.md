@@ -10,11 +10,11 @@
 Everything the client silently strips and everything the server refuses —
 caught before you send.
 
-[![CI](https://github.com/RAprogramm/telegram-widget-lint/actions/workflows/ci.yml/badge.svg)](https://github.com/RAprogramm/telegram-widget-lint/actions/workflows/ci.yml)
+[![CI](https://github.com/RAprogramm/widgetlint/actions/workflows/ci.yml/badge.svg)](https://github.com/RAprogramm/widgetlint/actions/workflows/ci.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![MSRV](https://img.shields.io/badge/rust-1.100%2B-orange.svg)](rust-toolchain.toml)
 [![rules](https://img.shields.io/badge/rules-50-green)](docs/rules/index.md)
-[![playground](https://img.shields.io/badge/playground-live-informational)](https://raprogramm.github.io/telegram-widget-lint/)
+[![playground](https://img.shields.io/badge/playground-live-informational)](https://raprogramm.github.io/widgetlint/)
 
 </div>
 
@@ -51,7 +51,7 @@ widget.html
 1 error, 1 warning, 0 info
 ```
 
-Or try it right now in the browser: **[live playground](https://raprogramm.github.io/telegram-widget-lint/)**
+Or try it right now in the browser: **[live playground](https://raprogramm.github.io/widgetlint/)**
 — the whole checker runs locally in WebAssembly, nothing is uploaded.
 
 ## For humans
