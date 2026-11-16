@@ -3,7 +3,8 @@
 
 <div align="center">
 
-# widgetlint
+<img width="1600" height="600" alt="widgetlint" src="https://github.com/user-attachments/assets/99b91f9a-2051-4b5e-ba30-259ea38909d7" />
+
 
 **Validator and linter for Telegram Bot API 10.4 widgets**
 
