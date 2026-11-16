@@ -9,6 +9,7 @@ id = "TGW200"
 severity = "warn"
 confidence = "certain"
 title = "viewport height units are unsupported"
+keywords = ["vh", "dvh", "svh", "lvh", "viewport", "height"]
 help = "use px, %, vw/vmin/vmax or aspect-ratio; height-relative units break in the message bubble"
 spec = "https://core.telegram.org/bots/widgets#css"
 
@@ -17,6 +18,7 @@ id = "TGW201"
 severity = "warn"
 confidence = "certain"
 title = "overflow auto/scroll is rewritten to hidden"
+keywords = ["overflow", "scroll", "auto", "hidden"]
 help = "there is no scrolling inside a widget; lay out content to fit"
 spec = "https://core.telegram.org/bots/widgets#css"
 
@@ -25,6 +27,7 @@ id = "TGW202"
 severity = "warn"
 confidence = "certain"
 title = "position sticky is rewritten to relative"
+keywords = ["position", "sticky", "fixed"]
 help = "sticky headers do not stick in widgets"
 spec = "https://core.telegram.org/bots/widgets#css"
 
@@ -33,6 +36,7 @@ id = "TGW203"
 severity = "warn"
 confidence = "certain"
 title = "logical properties are unsupported"
+keywords = ["margin-inline", "padding-block", "logical", "inset-inline"]
 help = "use physical properties (margin-left, width, inset-top, ...)"
 spec = "https://core.telegram.org/bots/widgets#css"
 
@@ -41,6 +45,7 @@ id = "TGW204"
 severity = "warn"
 confidence = "certain"
 title = "multi-column layout is unsupported"
+keywords = ["columns", "column-count", "multi-column"]
 help = "lay columns out with flex or grid"
 spec = "https://core.telegram.org/bots/widgets#css"
 
@@ -49,6 +54,7 @@ id = "TGW205"
 severity = "warn"
 confidence = "certain"
 title = "this display value is unsupported"
+keywords = ["display", "flex", "grid", "inline-flex"]
 help = "use block, flex, grid, inline-block or none"
 spec = "https://core.telegram.org/bots/widgets#css"
 
@@ -57,6 +63,7 @@ id = "TGW206"
 severity = "warn"
 confidence = "certain"
 title = "3D transforms are unsupported"
+keywords = ["transform", "perspective", "rotate3d", "translate3d", "3d"]
 help = "stick to 2D transforms (translate, rotate, scale)"
 spec = "https://core.telegram.org/bots/widgets#css"
 
@@ -65,6 +72,7 @@ id = "TGW207"
 severity = "warn"
 confidence = "certain"
 title = "this filter function is unsupported"
+keywords = ["filter", "blur", "grayscale", "backdrop-filter"]
 help = "filter supports blur(), brightness() and drop-shadow(); backdrop-filter only blur() and brightness()"
 spec = "https://core.telegram.org/bots/widgets#css"
 
@@ -73,6 +81,7 @@ id = "TGW208"
 severity = "warn"
 confidence = "certain"
 title = "clipping, masking and blending are unsupported"
+keywords = ["clip-path", "mask", "mix-blend-mode", "clip"]
 help = "no clip-path, mask, mix-blend-mode, isolation or background-blend-mode in widgets"
 spec = "https://core.telegram.org/bots/widgets#css"
 
@@ -81,6 +90,7 @@ id = "TGW209"
 severity = "warn"
 confidence = "certain"
 title = "this text effect is unsupported"
+keywords = ["text-shadow", "text-decoration", "writing-mode", "text-orientation"]
 help = "no text-shadow, line-clamp, background-clip: text, writing-mode or text-orientation"
 spec = "https://core.telegram.org/bots/widgets#css"
 
@@ -89,6 +99,7 @@ id = "TGW210"
 severity = "warn"
 confidence = "certain"
 title = "modern color function is unsupported"
+keywords = ["color", "oklch", "lab", "lch", "hwb", "color-mix"]
 help = "use hex, rgb(), hsl() or named colors"
 spec = "https://core.telegram.org/bots/widgets#css"
 
@@ -97,6 +108,7 @@ id = "TGW211"
 severity = "warn"
 confidence = "certain"
 title = "env()/url() argument is unsupported"
+keywords = ["env", "url", "safe-area", "var", "custom property"]
 help = "env() only safe-area-inset-*; url() only data: images and #fragment"
 spec = "https://core.telegram.org/bots/widgets#css"
 
@@ -105,6 +117,7 @@ id = "TGW212"
 severity = "warn"
 confidence = "certain"
 title = "this at-rule or nested CSS is unsupported"
+keywords = ["@supports", "nested", "container", "at-rule", "media"]
 help = "remove the at-rule; write plain flat CSS"
 spec = "https://core.telegram.org/bots/widgets#css"
 
@@ -113,6 +126,7 @@ id = "TGW213"
 severity = "warn"
 confidence = "certain"
 title = "this selector pseudo-class is unsupported"
+keywords = [":has", ":is", ":where", "pseudo-class", "selector"]
 help = "widgets have no focus, forms or document state; drive state from JS classes"
 spec = "https://core.telegram.org/bots/widgets#css"
 
@@ -121,6 +135,7 @@ id = "TGW214"
 severity = "warn"
 confidence = "certain"
 title = "this @media feature is unsupported"
+keywords = ["@media", "prefers-color-scheme", "prefers-reduced-motion", "media query"]
 help = "only width, orientation, prefers-color-scheme and prefers-reduced-motion work"
 spec = "https://core.telegram.org/bots/widgets#css"
 
@@ -129,6 +144,7 @@ id = "TGW215"
 severity = "warn"
 confidence = "certain"
 title = "named font families are not available"
+keywords = ["font-family", "font", "custom font", "webfont"]
 help = "only system-ui, sans-serif, serif, monospace and ui-* generics are allowed"
 spec = "https://core.telegram.org/bots/widgets#css"
 
@@ -137,6 +153,7 @@ id = "TGW216"
 severity = "info"
 confidence = "heuristic"
 title = "property is not recognized by the CSS engine"
+keywords = ["unknown property", "unsupported property", "css property"]
 help = "the browser drops unknown declarations; verify the property name"
 spec = "https://core.telegram.org/bots/widgets#css"
 
@@ -145,6 +162,7 @@ id = "TGW300"
 severity = "error"
 confidence = "certain"
 title = "more than 400 CSS rules"
+keywords = ["400 rules", "css rules", "limit"]
 help = "the server refuses widgets with oversized stylesheets"
 spec = "https://core.telegram.org/bots/widgets#limits"
 
@@ -153,5 +171,6 @@ id = "TGW301"
 severity = "error"
 confidence = "certain"
 title = "more than 32 @keyframes rules"
+keywords = ["keyframes", "animation", "limit"]
 help = "merge or remove keyframe animations"
 spec = "https://core.telegram.org/bots/widgets#limits"

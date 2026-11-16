@@ -11,10 +11,9 @@ workflows:
         - 'actions/download-artifact@v8.0.2'
         - 'actions/upload-artifact@v7.0.2'
         - 'actions/upload-pages-artifact@v5.0.0'
-        - 'baptiste0928/cargo-install@v3.5.0'
         - 'codecov/codecov-action@v7.1.1'
         - 'codecov/test-results-action@v1.2.1'
-        - 'codspeedhq/action@v5.0.0'
+        - 'codspeedhq/action@v5.6.3'
         - 'dtolnay/rust-toolchain@v1'
         - 'embarkstudios/cargo-deny-action@v2.1.1'
         - 'fsfe/reuse-action@v6.0.0'
@@ -86,11 +85,6 @@ dependencies:
         repo_id: 496012378
         uses:
             - 'actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f'
-    'baptiste0928/cargo-install@v3.5.0':
-        ref: 'v3.5.0'
-        commit: 'sha1-8195d4f734a149db85385bb4102b42efcd373759'
-        owner_id: 22115890
-        repo_id: 429360691
     'codecov/codecov-action@v7.1.1':
         ref: 'v7.1.1'
         commit: 'sha1-303a32d7a59b442fa8d48b6a1cc6825c09c847a5'
@@ -103,9 +97,9 @@ dependencies:
         commit: 'sha1-0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3'
         owner_id: 8226205
         repo_id: 761956558
-    'codspeedhq/action@v5.0.0':
-        ref: 'v5.0.0'
-        commit: 'sha1-f87ba88d8df49f904707c82ddc254bc791b049f5'
+    'codspeedhq/action@v5.6.3':
+        ref: 'v5.6.3'
+        commit: 'sha1-af75f77f17a054769abefaa42fe8dc2975469b5f'
         owner_id: 116658140
         repo_id: 561699778
         uses:

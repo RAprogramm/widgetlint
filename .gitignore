@@ -3,5 +3,7 @@
 
 /target
 /playground/pkg
+/playground/rules
+/playground/llms.txt
 /crates/wl-wasm/target
 /crates/wl-wasm/Cargo.lock

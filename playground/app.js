@@ -32,17 +32,30 @@ const SAMPLES = {
 </div>`,
   heavy: `<div class="card">
   <style>
-${"    .pad { padding: 8px; }\n".repeat(120)}
+    .pad { padding: 8px; }
   </style>
-  <p>${"padding makes the compressed size grow. ".repeat(80)}</p>
+  <p>${incompressible(12000)}</p>
 </div>`,
   css: `<div class="card">
   <style>
-    .card { position: sticky; top: 0; transform: rotate(3deg); }
+    .card { position: sticky; top: 0; height: 100dvh; backdrop-filter: blur(4px); }
+    .row { color: oklch(0.7 0.1 200); }
   </style>
   <p>Unsupported features</p>
 </div>`
 };
+
+function incompressible(length) {
+  let seed = 0x2545f491;
+  let text = '';
+  while (text.length < length) {
+    seed ^= seed << 13;
+    seed ^= seed >>> 17;
+    seed ^= seed << 5;
+    text += ((seed >>> 0) % 1296).toString(36).padStart(2, '0');
+  }
+  return text.slice(0, length);
+}
 
 const THEME_ORDER = ['auto', 'light', 'dark'];
 

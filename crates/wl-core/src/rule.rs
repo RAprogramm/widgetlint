@@ -24,6 +24,8 @@ struct RuleData {
     title:      String,
     #[serde(default)]
     help:       Option<String>,
+    #[serde(default)]
+    keywords:   Vec<String>,
     spec:       String
 }
 
@@ -55,6 +57,8 @@ pub struct RuleMeta {
     pub title:            &'static str,
     /// Optional fix hint.
     pub help:             Option<&'static str>,
+    /// Search terms of the rule, comma separated; empty when it has none.
+    pub keywords:         &'static str,
     /// URL of the specification section.
     pub spec:             &'static str
 }
@@ -89,6 +93,7 @@ fn registry() -> &'static HashMap<&'static str, RuleMeta> {
                 },
                 title:            leak(rule.title),
                 help:             rule.help.map(leak),
+                keywords:         leak(rule.keywords.join(", ")),
                 spec:             leak(rule.spec)
             };
             map.insert(meta.id, meta);

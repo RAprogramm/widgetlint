@@ -232,7 +232,7 @@ jobs:
           tool: cargo-codspeed@6.0.0
       - run: cargo codspeed build -p wl-size -p wl-check
       - name: Run the benchmarks
-        uses: CodSpeedHQ/action@v5.0.0
+        uses: CodSpeedHQ/action@v5.6.3
         with:
           mode: simulation
           token: ${{ secrets.CODSPEED_TOKEN }}
@@ -262,6 +262,8 @@ jobs:
           tool: wasm-pack
       - name: Build the wasm package
         run: wasm-pack build crates/wl-wasm --target web --out-dir ../../playground/pkg
+      - name: Build the rule site
+        run: cargo run -p xtask --locked -- gen-site
       - name: Setup Pages
         uses: actions/configure-pages@v6.0.0
       - name: Upload artifact
@@ -334,10 +336,19 @@ jobs:
           persist-credentials: true
 
       - name: Install git-cliff
-        # baptiste0928/cargo-install v3.5.0
-        uses: baptiste0928/cargo-install@v3.5.0
-        with:
-          crate: git-cliff
+        shell: bash
+        env:
+          GIT_CLIFF_VERSION: "2.14.2"
+        run: |
+          set -euo pipefail
+          ARCHIVE="git-cliff-${GIT_CLIFF_VERSION}-x86_64-unknown-linux-musl.tar.gz"
+          BASE="https://github.com/orhun/git-cliff/releases/download/v${GIT_CLIFF_VERSION}"
+          curl -fsSL -o "${ARCHIVE}" "${BASE}/${ARCHIVE}"
+          curl -fsSL -o "${ARCHIVE}.sha512" "${BASE}/${ARCHIVE}.sha512"
+          sha512sum --check --strict < "${ARCHIVE}.sha512"
+          tar -xzf "${ARCHIVE}" --strip-components=1 \
+            "git-cliff-${GIT_CLIFF_VERSION}/git-cliff"
+          sudo install -m 0755 git-cliff /usr/local/bin/git-cliff
 
       - name: Compute next version
         id: bump
@@ -591,10 +602,19 @@ jobs:
           pattern: release-*
           merge-multiple: true
       - name: Install git-cliff
-        # baptiste0928/cargo-install v3.5.0
-        uses: baptiste0928/cargo-install@v3.5.0
-        with:
-          crate: git-cliff
+        shell: bash
+        env:
+          GIT_CLIFF_VERSION: "2.14.2"
+        run: |
+          set -euo pipefail
+          ARCHIVE="git-cliff-${GIT_CLIFF_VERSION}-x86_64-unknown-linux-musl.tar.gz"
+          BASE="https://github.com/orhun/git-cliff/releases/download/v${GIT_CLIFF_VERSION}"
+          curl -fsSL -o "${ARCHIVE}" "${BASE}/${ARCHIVE}"
+          curl -fsSL -o "${ARCHIVE}.sha512" "${BASE}/${ARCHIVE}.sha512"
+          sha512sum --check --strict < "${ARCHIVE}.sha512"
+          tar -xzf "${ARCHIVE}" --strip-components=1 \
+            "git-cliff-${GIT_CLIFF_VERSION}/git-cliff"
+          sudo install -m 0755 git-cliff /usr/local/bin/git-cliff
       - name: Generate release notes
         run: >-
           git-cliff --config cliff.toml --latest

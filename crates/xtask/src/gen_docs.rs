@@ -69,7 +69,7 @@ fn run_at(root: &Path, check: bool) -> AppResult<()> {
     Ok(())
 }
 
-fn workspace_root() -> AppResult<PathBuf> {
+pub fn workspace_root() -> AppResult<PathBuf> {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .and_then(Path::parent)
@@ -122,9 +122,14 @@ fn rule_page(rule: &RuleMeta) -> String {
     let help = rule
         .help
         .map_or_else(String::new, |help| format!("{help}\n\n"));
+    let keywords = if rule.keywords.is_empty() {
+        String::new()
+    } else {
+        format!("| Keywords | {} |\n", rule.keywords)
+    };
     format!(
         "# {} — {}\n\n| Field | Value |\n|---|---|\n| Severity | `{}` |\n| Confidence | `{}` |\n\
-         | Category | {} |\n\n{help}Spec: <{}>\n",
+         | Category | {} |\n{keywords}\n{help}Spec: <{}>\n",
         rule.id,
         rule.title,
         rule.default_severity.as_str(),
@@ -214,6 +219,7 @@ mod tests {
             confidence: Confidence::Certain,
             title: "synthetic rule",
             help,
+            keywords: "synthetic, keyword",
             spec: "https://core.telegram.org/bots/widgets"
         }))
     }

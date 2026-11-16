@@ -83,8 +83,9 @@ commit_parsers = [
 protect_breaking_commits = true
 # Filter out commits
 filter_commits = false
-# Glob pattern for matching tags
-tag_pattern = "v[0-9].*"
+# Glob pattern for matching tags; the prefix is optional so the first
+# release, computed from the manifest version, matches the pattern too
+tag_pattern = "v?[0-9].*"
 # Sort tags chronologically
 date_order = false
 # Sort commits inside sections by oldest/newest order

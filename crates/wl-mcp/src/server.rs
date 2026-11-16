@@ -187,6 +187,7 @@ impl WidgetLintServer {
             "confidence": rule.confidence.as_str(),
             "title": rule.title,
             "help": rule.help,
+            "keywords": rule.keywords,
             "spec": rule.spec
         });
         Ok(CallToolResult::structured(value))

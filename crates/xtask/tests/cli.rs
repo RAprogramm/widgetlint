@@ -32,3 +32,19 @@ fn check_docs_exits_with_success() {
         .expect("the xtask binary must spawn");
     assert!(output.status.success(), "committed docs must be fresh");
 }
+
+#[test]
+fn gen_site_writes_the_rule_catalog() {
+    let output = Command::new(env!("CARGO_BIN_EXE_xtask"))
+        .arg("gen-site")
+        .output()
+        .expect("the xtask binary must spawn");
+    assert!(output.status.success(), "the site must be generated");
+    let root = std::env::current_dir().expect("the working directory must be readable");
+    let mut dir = root.as_path();
+    while !dir.join("ruleset").is_dir() {
+        dir = dir.parent().expect("the workspace root must be reachable");
+    }
+    assert!(dir.join("playground/rules/index.html").is_file());
+    assert!(dir.join("playground/rules/TGW100.html").is_file());
+}

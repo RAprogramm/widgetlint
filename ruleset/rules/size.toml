@@ -9,6 +9,7 @@ id = "TGW001"
 severity = "error"
 confidence = "certain"
 title = "raw HTML exceeds 32768 bytes"
+keywords = ["32768", "raw size", "html size", "limit"]
 help = "remove markup or shorten text; the server refuses oversized widgets"
 spec = "https://core.telegram.org/bots/widgets#limits"
 
@@ -17,6 +18,7 @@ id = "TGW002"
 severity = "error"
 confidence = "certain"
 title = "compressed size exceeds 4096 bytes"
+keywords = ["4096", "compressed size", "zlib", "limit"]
 help = "use size --breakdown: the most expensive parts are usually script and style"
 spec = "https://core.telegram.org/bots/widgets#counting-the-size"
 
@@ -25,6 +27,7 @@ id = "TGW003"
 severity = "warn"
 confidence = "certain"
 title = "compressed size exceeds the soft budget"
+keywords = ["budget", "3800", "soft limit", "compressed size"]
 help = "the documentation recommends aiming for 3800 bytes after compression"
 spec = "https://core.telegram.org/bots/widgets#writing-widgets-with-an-llm"
 
@@ -33,6 +36,7 @@ id = "TGW004"
 severity = "error"
 confidence = "certain"
 title = "invalid UTF-8 or a NUL character in the input"
+keywords = ["utf-8", "utf8", "encoding", "nul", "null byte"]
 help = "save the widget as UTF-8 without a byte-order mark or NUL bytes"
 spec = "https://core.telegram.org/bots/widgets#limits"
 
@@ -41,5 +45,6 @@ id = "TGW005"
 severity = "info"
 confidence = "certain"
 title = "compressed size is within 64 bytes of the hard limit"
+keywords = ["near limit", "headroom", "margin", "compressed size"]
 help = "zlib builds differ by tens of bytes near the limit; trust the Python reference"
 spec = "https://core.telegram.org/bots/widgets#counting-the-size"

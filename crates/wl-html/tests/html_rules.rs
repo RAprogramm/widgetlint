@@ -266,3 +266,10 @@ fn clean_widget_document_has_no_findings() -> AppResult<()> {
          </div>"
     )
 }
+
+#[test]
+fn an_image_without_a_source_is_not_flagged() -> AppResult<()> {
+    assert_clean("<img alt='logo'>")?;
+    assert_clean("<img>")?;
+    Ok(())
+}

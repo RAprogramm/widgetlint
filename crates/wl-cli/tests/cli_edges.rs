@@ -556,3 +556,30 @@ fn check_fail_on_info_promotes_quiet_findings() -> AppResult<()> {
     );
     Ok(())
 }
+
+#[test]
+fn check_reports_a_directory_it_cannot_read() -> AppResult<()> {
+    let dir = temp_dir("unreadable")?;
+    std::fs::write(dir.join("widget.html"), "<input>")?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&dir, std::fs::Permissions::from_mode(0o000))?;
+        let output = widgetlint(&["check", &path_of(&dir)])?;
+        if std::fs::read_dir(&dir).is_err() {
+            assert!(
+                !output.status.success(),
+                "an unreadable directory must fail"
+            );
+            assert!(
+                stderr(&output).contains("cannot read"),
+                "{}",
+                stderr(&output)
+            );
+        } else {
+            assert!(output.status.success(), "a readable directory must pass");
+        }
+        std::fs::set_permissions(&dir, std::fs::Permissions::from_mode(0o755))?;
+    }
+    Ok(())
+}
