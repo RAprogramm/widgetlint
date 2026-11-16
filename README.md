@@ -127,6 +127,21 @@ and the next action), `explain` (one rule), `rules` (the catalog) and
 `schema` (the JSON Schema of the report). Nothing is read from disk: every
 widget arrives as a tool parameter. See [docs/mcp.md](docs/mcp.md).
 
+### GitHub Action
+
+The repository ships a composite action, so a widget project needs three
+lines and no installation:
+
+```yaml
+- uses: RAprogramm/widgetlint@v1
+  with:
+    path: widgets/
+    fail-on: warn
+```
+
+The action downloads the release binary for the runner, verifies its SHA-256
+checksum and checks the widgets. See [docs/action.md](docs/action.md).
+
 ## Rules
 
 50 rules, all derived from the official

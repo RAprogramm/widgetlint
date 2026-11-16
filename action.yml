@@ -1,0 +1,146 @@
+# SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com>
+# SPDX-License-Identifier: MIT
+
+name: widgetlint
+description: Validate Telegram Bot API 10.4 widgets with widgetlint
+author: RAprogramm
+
+branding:
+  icon: check-circle
+  color: blue
+
+inputs:
+  path:
+    description: Widget file or directory to check
+    required: false
+    default: "."
+  fail-on:
+    description: "Severity that fails the check: info, warn or error"
+    required: false
+    default: error
+  min-severity:
+    description: "Drop findings below this severity: info, warn or error"
+    required: false
+    default: ""
+  min-confidence:
+    description: "Drop rules below this confidence: heuristic or certain"
+    required: false
+    default: ""
+  config:
+    description: Path to a widgetlint.toml configuration file
+    required: false
+    default: ""
+  version:
+    description: Release version to use, "latest" picks the newest release
+    required: false
+    default: latest
+  repository:
+    description: Repository that publishes the releases
+    required: false
+    default: RAprogramm/widgetlint
+
+runs:
+  using: composite
+  steps:
+    - name: Install widgetlint (unix)
+      id: install-unix
+      if: runner.os != 'Windows'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+        INPUT_VERSION: ${{ inputs.version }}
+        RUNNER_ARCH: ${{ runner.arch }}
+        RUNNER_OS: ${{ runner.os }}
+      run: |
+        set -euo pipefail
+        case "${RUNNER_OS}/${RUNNER_ARCH}" in
+          Linux/X64) TARGET="x86_64-unknown-linux-gnu" ;;
+          Linux/ARM64) TARGET="aarch64-unknown-linux-gnu" ;;
+          macOS/ARM64) TARGET="aarch64-apple-darwin" ;;
+          macOS/X64) TARGET="x86_64-apple-darwin" ;;
+          *) echo "::error::unsupported runner ${RUNNER_OS}/${RUNNER_ARCH}"; exit 1 ;;
+        esac
+        VERSION="${INPUT_VERSION}"
+        if [ "${VERSION}" = "latest" ]; then
+          VERSION="$(gh release view --repo "${INPUT_REPOSITORY}" \
+            --json tagName --jq '.tagName' | sed 's/^v//')"
+        fi
+        NAME="widgetlint-${VERSION}-${TARGET}"
+        WORKDIR="${RUNNER_TEMP}/widgetlint"
+        mkdir -p "${WORKDIR}"
+        gh release download "${VERSION}" --repo "${INPUT_REPOSITORY}" \
+          --pattern "${NAME}.tar.gz" --pattern "${NAME}.tar.gz.sha256" \
+          --dir "${WORKDIR}"
+        cd "${WORKDIR}"
+        grep " ${NAME}.tar.gz\$" "${NAME}.tar.gz.sha256" | sha256sum --check --strict
+        tar -xzf "${NAME}.tar.gz" widgetlint
+        chmod +x widgetlint
+        echo "bin=${WORKDIR}/widgetlint" >> "${GITHUB_OUTPUT}"
+
+    - name: Install widgetlint (windows)
+      id: install-windows
+      if: runner.os == 'Windows'
+      shell: pwsh
+      env:
+        GH_TOKEN: ${{ github.token }}
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+        INPUT_VERSION: ${{ inputs.version }}
+        RUNNER_ARCH: ${{ runner.arch }}
+        RUNNER_OS: ${{ runner.os }}
+      run: |
+        $ErrorActionPreference = "Stop"
+        switch ("$($env:RUNNER_OS)/$($env:RUNNER_ARCH)") {
+          "Windows/X64" { $target = "x86_64-pc-windows-msvc" }
+          "Windows/ARM64" { $target = "aarch64-pc-windows-msvc" }
+          default {
+            Write-Error "unsupported runner $($env:RUNNER_OS)/$($env:RUNNER_ARCH)"
+            exit 1
+          }
+        }
+        $version = $env:INPUT_VERSION
+        if ($version -eq "latest") {
+          $version = (gh release view --repo $env:INPUT_REPOSITORY --json tagName --jq '.tagName') -replace '^v', ''
+        }
+        $name = "widgetlint-$version-$target"
+        $workdir = Join-Path $env:RUNNER_TEMP "widgetlint"
+        New-Item -ItemType Directory -Force $workdir | Out-Null
+        gh release download $version --repo $env:INPUT_REPOSITORY --pattern "$name.zip" --pattern "$name.zip.sha256" --dir $workdir
+        $expected = ((Get-Content (Join-Path $workdir "$name.zip.sha256")) -split '\s+')[0]
+        $actual = (Get-FileHash (Join-Path $workdir "$name.zip") -Algorithm SHA256).Hash.ToLower()
+        if ($expected -ne $actual) {
+          Write-Error "checksum mismatch for $name.zip"
+          exit 1
+        }
+        Expand-Archive (Join-Path $workdir "$name.zip") -DestinationPath $workdir -Force
+        $binary = (Join-Path $workdir "widgetlint.exe") -replace '\\', '/'
+        "bin=$binary" >> $env:GITHUB_OUTPUT
+
+    - name: Check the widgets
+      shell: bash
+      env:
+        WIDGETLINT_BIN_UNIX: ${{ steps.install-unix.outputs.bin }}
+        WIDGETLINT_BIN_WINDOWS: ${{ steps.install-windows.outputs.bin }}
+        INPUT_PATH: ${{ inputs.path }}
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+        INPUT_MIN_SEVERITY: ${{ inputs.min-severity }}
+        INPUT_MIN_CONFIDENCE: ${{ inputs.min-confidence }}
+        INPUT_CONFIG: ${{ inputs.config }}
+      run: |
+        set -euo pipefail
+        if [ -n "${WIDGETLINT_BIN_UNIX}" ]; then
+          BIN="${WIDGETLINT_BIN_UNIX}"
+        else
+          BIN="${WIDGETLINT_BIN_WINDOWS}"
+        fi
+        ARGS=("check" "${INPUT_PATH}" "--fail-on" "${INPUT_FAIL_ON}")
+        if [ -n "${INPUT_CONFIG}" ]; then
+          ARGS+=("--config" "${INPUT_CONFIG}")
+        fi
+        if [ -n "${INPUT_MIN_SEVERITY}" ]; then
+          ARGS+=("--min-severity" "${INPUT_MIN_SEVERITY}")
+        fi
+        if [ -n "${INPUT_MIN_CONFIDENCE}" ]; then
+          ARGS+=("--min-confidence" "${INPUT_MIN_CONFIDENCE}")
+        fi
+        "${BIN}" "${ARGS[@]}"

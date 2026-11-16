@@ -499,11 +499,20 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             archive: tar
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-gnu
+            archive: tar
           - os: macos-latest
             target: aarch64-apple-darwin
             archive: tar
+          - os: macos-15
+            target: x86_64-apple-darwin
+            archive: tar
           - os: windows-latest
             target: x86_64-pc-windows-msvc
+            archive: zip
+          - os: windows-11-arm
+            target: aarch64-pc-windows-msvc
             archive: zip
     permissions:
       contents: read
@@ -528,7 +537,7 @@ jobs:
           mkdir -p dist
           cp "target/${TARGET}/release/widgetlint" dist/
           cp README.md LICENSE dist/
-          tar -czf "${NAME}.tar.gz" -C dist .
+          tar -czf "${NAME}.tar.gz" -C dist widgetlint README.md LICENSE
           sha256sum "${NAME}.tar.gz" > "${NAME}.tar.gz.sha256"
       - name: Package (windows)
         if: matrix.archive == 'zip'
