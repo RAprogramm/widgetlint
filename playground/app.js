@@ -148,15 +148,25 @@ function severityClass(severity) {
   return 'info';
 }
 
+function verdictState(report) {
+  if (report.verdict !== 'pass') {
+    return 'fail';
+  }
+  return report.counts.warn > 0 ? 'warn' : 'pass';
+}
+
 function renderVerdict(report) {
-  const passed = report.verdict === 'pass';
-  elements.verdict.className = `verdict verdict--${passed ? 'pass' : 'fail'}`;
+  const state = verdictState(report);
+  const messages = {
+    pass: 'Looks good — no blocking findings',
+    warn: 'It loads, but the client will silently change this widget',
+    fail: 'This widget will not work as written'
+  };
+  elements.verdict.className = `verdict verdict--${state}`;
   elements.verdict.replaceChildren();
-  const icon = text('span', 'verdict__icon', passed ? '✓' : '!');
+  const icon = text('span', 'verdict__icon', state === 'pass' ? '✓' : '!');
   icon.setAttribute('aria-hidden', 'true');
-  elements.verdict.append(icon, text('span', '', passed
-    ? 'Looks good — no blocking findings'
-    : 'This widget will not work as written'));
+  elements.verdict.append(icon, text('span', '', messages[state]));
   elements.reason.textContent = report.reason;
 }
 
