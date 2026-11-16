@@ -29,7 +29,12 @@ wl-profile.workspace = true
 wl-size = { workspace = true, default-features = false }
 
 [dev-dependencies]
+criterion.workspace = true
 masterror.workspace = true
+
+[[bench]]
+name = "check"
+harness = false
 
 [lints]
 workspace = true

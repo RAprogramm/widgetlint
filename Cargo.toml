@@ -24,6 +24,7 @@ version = "0.1.0"
 
 [workspace.dependencies]
 clap = { version = "4", features = ["derive"] }
+criterion = "0.8"
 flate2 = { version = "1", default-features = false }
 globset = "0.4"
 html5ever = "0.40"
