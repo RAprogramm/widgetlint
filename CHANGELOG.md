@@ -8,6 +8,21 @@ All notable changes to widgetlint will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.3] - 2026-11-16
+
+### Bug Fixes
+
+- Show a warning verdict state for non-blocking findings in the playground ([81b7f8b](https://github.com/RAprogramm/widgetlint/commit/81b7f8bc3cd96e65d292a6026a84152537fa2fb4))
+
+### Documentation
+
+- Fold the secrets guide into the ci document ([33d2952](https://github.com/RAprogramm/widgetlint/commit/33d2952b8945b495b7966f23c3b264c1a6764d04))
+
+### CI/CD
+
+- Gate jobs on changed paths and keep external services non-blocking ([419b384](https://github.com/RAprogramm/widgetlint/commit/419b3846643915707633401d99ff62aae2349e2d))
+
+
 ## [0.1.2] - 2026-11-16
 
 ### Bug Fixes
