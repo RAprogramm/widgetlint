@@ -2,6 +2,12 @@
 // SPDX-License-Identifier: MIT
 
 #![allow(
+    missing_docs,
+    clippy::significant_drop_tightening,
+    reason = "the CodSpeed criterion_group! and criterion_main! macros expand to undocumented \
+              functions that hold the Criterion value until the end of the group"
+)]
+#![allow(
     clippy::expect_used,
     reason = "benches must fail loudly on zlib errors"
 )]
