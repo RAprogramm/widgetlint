@@ -279,13 +279,15 @@ fn verify_prints_only_the_verdict() -> AppResult<()> {
 
 #[test]
 fn version_reports_identity_in_both_formats() -> AppResult<()> {
+    let version = env!("CARGO_PKG_VERSION");
     let output = widgetlint(&["version"])?;
     assert!(output.status.success());
-    assert!(stdout(&output).contains("widgetlint 0.1.0"));
+    assert!(stdout(&output).contains(&format!("widgetlint {version}")));
     let output = widgetlint(&["version", "--json"])?;
     let value: serde_json::Value = serde_json::from_str(stdout(&output).trim())
         .map_err(|error| AppError::internal(format!("version json: {error}")))?;
     assert_eq!(value["name"], "widgetlint");
+    assert_eq!(value["version"], version);
     assert_eq!(value["schema_version"], 1);
     assert!(value["rules"].as_u64().unwrap_or(0) > 0);
     Ok(())

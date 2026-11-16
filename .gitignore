@@ -7,3 +7,4 @@
 /playground/llms.txt
 /crates/wl-wasm/target
 /crates/wl-wasm/Cargo.lock
+__pycache__/
