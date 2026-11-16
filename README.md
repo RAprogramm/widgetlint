@@ -13,7 +13,7 @@ caught before you send.
 
 [![CI](https://github.com/RAprogramm/widgetlint/actions/workflows/ci.yml/badge.svg)](https://github.com/RAprogramm/widgetlint/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/RAprogramm/widgetlint/branch/main/graph/badge.svg)](https://codecov.io/gh/RAprogramm/widgetlint)
-[![CodSpeed](https://img.shields.io/endpoint?url=https://app.codspeed.io//badge.json)](https://app.codspeed.io/RAprogramm/widgetlint?utm_source=badge)
+[![CodSpeed](https://img.shields.io/endpoint?url=https://codspeed.io/badge.json)](https://app.codspeed.io/RAprogramm/widgetlint?utm_source=badge)
 [![release](https://img.shields.io/github/v/release/RAprogramm/widgetlint?label=release)](https://github.com/RAprogramm/widgetlint/releases/latest)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![REUSE](https://api.reuse.software/badge/github.com/RAprogramm/widgetlint)](https://api.reuse.software/info/github.com/RAprogramm/widgetlint)

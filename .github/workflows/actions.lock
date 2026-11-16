@@ -14,7 +14,7 @@ workflows:
         - 'baptiste0928/cargo-install@v3.5.0'
         - 'codecov/codecov-action@v7.1.1'
         - 'codecov/test-results-action@v1.2.1'
-        - 'codspeedhq/action@v5.0.0'
+        - 'codspeedhq/action@v5.6.3'
         - 'dtolnay/rust-toolchain@v1'
         - 'embarkstudios/cargo-deny-action@v2.1.1'
         - 'fsfe/reuse-action@v6.0.0'
@@ -103,9 +103,9 @@ dependencies:
         commit: 'sha1-0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3'
         owner_id: 8226205
         repo_id: 761956558
-    'codspeedhq/action@v5.0.0':
-        ref: 'v5.0.0'
-        commit: 'sha1-f87ba88d8df49f904707c82ddc254bc791b049f5'
+    'codspeedhq/action@v5.6.3':
+        ref: 'v5.6.3'
+        commit: 'sha1-af75f77f17a054769abefaa42fe8dc2975469b5f'
         owner_id: 116658140
         repo_id: 561699778
         uses:
