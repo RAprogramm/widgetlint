@@ -1,114 +1,67 @@
 <!-- SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com> -->
 <!-- SPDX-License-Identifier: MIT -->
 
-# GitHub Secrets Setup
+# Repository Secrets
 
-This document lists every secret the CI pipeline of `widgetlint` reads, why it
-needs it, and what happens when it is missing.
+**`widgetlint` needs no repository secrets.** The repository is public, so
+every service authenticates through OpenID Connect and the built-in
+`GITHUB_TOKEN`:
 
-Repository settings live at
-<https://github.com/RAprogramm/widgetlint/settings/secrets/actions>.
+| Service | Authentication | Secret needed |
+|---|---|---|
+| Codecov (coverage and test results) | OIDC (`use_oidc: true`) | none |
+| CodSpeed (benchmarks) | OIDC | none |
+| GitHub Pages (the playground and the rule catalog) | `GITHUB_TOKEN` + `id-token` | none |
+| Releases, tags, version bumps | `GITHUB_TOKEN` with `contents: write` | none |
+| Provenance attestations | `GITHUB_TOKEN` with `id-token` and `attestations` | none |
 
-## Required secrets
-
-None of the secrets below is mandatory for the pipeline to stay green: every
-secret-gated step degrades gracefully when the secret is absent. Adding them
-turns the corresponding service on.
-
-### 1. `CODECOV_TOKEN`
-
-Uploads the coverage report and the test results to
-[Codecov](https://codecov.io). The repository is private, so the upload needs
-a token: tokenless uploads are only supported for public repositories.
-
-How to get it:
-
-1. Sign in at <https://codecov.io>.
-2. Add the repository `RAprogramm/widgetlint`.
-3. Copy the upload token from the repository settings.
-4. Add it as the repository secret `CODECOV_TOKEN`.
-
-Without the secret the coverage gate still runs locally in CI
-(`cargo llvm-cov nextest --fail-under-lines 95`), but the report is not
-uploaded and no Codecov badge data is produced.
-
-### 2. `CODSPEED_TOKEN`
-
-Uploads the benchmark results to [CodSpeed](https://codspeed.io). The
-repository is private, so the token is required for the upload.
-
-How to get it:
-
-1. Sign in at <https://codspeed.io>.
-2. Add the repository `RAprogramm/widgetlint`.
-3. Copy the API token from the repository settings.
-4. Add it as the repository secret `CODSPEED_TOKEN`.
-
-Without the secret the benchmark job reports a failure but does not fail the
-workflow: benchmarks never gate a merge.
-
-### 3. `CARGO_REGISTRY_TOKEN`
-
-Publishes the crates to [crates.io](https://crates.io). It is **not used
-yet** — the crates are not published, and the release pipeline only builds
-binaries and creates a GitHub Release. The name is the crates.io convention;
-a fine-grained PAT with the `publish-new-crates` scope for the `widgetlint`
-namespace is enough.
-
-Add it only when the crates are published to crates.io.
-
-## Built-in credentials
-
-`GITHUB_TOKEN` is provided by GitHub automatically and needs no setup. The
-pipeline grants it exactly the permissions each job needs through explicit
+The workflow grants each job exactly the permissions it needs through
 `permissions:` blocks, so the repository setting
-*Settings → Actions → General → Workflow permissions* may stay on the
-default (read-only) value.
+*Settings → Actions → General → Workflow permissions* may stay at its default
+value.
 
-The jobs that need more than read access declare it themselves:
+## Optional secrets
 
-| Job | Permissions |
-|---|---|
-| `version-bump` | `contents: write` — pushes the version commit and the release tag |
-| `create-release` | `contents: write` — creates the GitHub Release and uploads assets |
-| `pages-deploy` | `pages: write`, `id-token: write` — publishes the playground |
-| `build-release` | `id-token: write`, `attestations: write` — signs the build provenance |
+### `CARGO_REGISTRY_TOKEN`
 
-## Testing the setup
+Only needed when the crates are published to [crates.io](https://crates.io).
+The release pipeline of the current version builds the binaries and creates
+the GitHub Release; it does not publish to a registry.
 
-1. **Coverage upload:** push any commit to `main` and open the `coverage` job
-   in the run — the Codecov steps appear only when the token is set.
-2. **Benchmarks:** push any commit to `main` and check the `Benchmarks
-   (CodSpeed)` job.
-3. **Release:** push a conventional commit (`feat:`, `fix:`) to `main`. The
-   pipeline bumps the version, tags it, builds the binaries for Linux, macOS
-   and Windows, signs their provenance and publishes the GitHub Release.
+When publishing starts, add a fine-grained personal access token with the
+`publish-new-crates` scope for the `widgetlint` namespace as
+`CARGO_REGISTRY_TOKEN`.
 
-## Security notes
+### `CODECOV_TOKEN`
 
-- Never commit a token; secrets live only in the repository settings.
-- Rotate the tokens periodically and revoke them when they are no longer
-  needed.
-- Use tokens scoped to a single repository and to the single service they
-  belong to; never reuse one token across services.
-- The release pipeline authenticates with the built-in `GITHUB_TOKEN` only —
-  no long-lived credential is required to publish a release.
+Not needed. Codecov accepts OIDC uploads for public repositories. If the
+organization ever disables tokenless uploads, add the repository upload token
+as `CODECOV_TOKEN` and set `use_oidc: false` in the coverage job.
 
-## Troubleshooting
+### `CODSPEED_TOKEN`
 
-### Coverage upload fails
+Not needed. The benchmarks authenticate with OIDC.
 
-- Check that `CODECOV_TOKEN` exists and has not expired.
-- Check that the repository is added to the Codecov organisation.
-- Check that the token belongs to the repository, not to another one.
+## How the authentication works
 
-### Benchmark upload fails
+The coverage job asks for an `id-token` and the Codecov actions exchange it
+for a short-lived upload token:
 
-- Check that `CODSPEED_TOKEN` exists and that the repository is registered.
-- The job is marked `continue-on-error`, so a failure never blocks a merge.
+```yaml
+permissions:
+  contents: read
+  id-token: write
+```
 
-### Release creation fails
+The token is issued for the current run and expires with it, so there is no
+long-lived credential in the repository and nothing to rotate.
 
-- Check that the tag follows semantic versioning (`vX.Y.Z`).
-- Check that no release with the same tag exists.
-- Check that the `version-bump` job pushed the tag: `git ls-remote --tags`.
+## Verifying the setup
+
+Push any commit to `main` and open the run:
+
+- the **Coverage** job must show two successful uploads to Codecov;
+- the **Benchmarks (CodSpeed)** job must publish the benchmark results;
+- the **Playground deploy** job must publish the site;
+- the **Create GitHub Release** job must publish the release with the binaries
+  for Linux, macOS and Windows.

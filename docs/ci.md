@@ -36,8 +36,23 @@ the workspace.
 | `cargo-codspeed` | 6.0.0 | benchmark execution for CodSpeed |
 | `git-cliff` | latest | changelog and version computation |
 
-`actionlint` and `zizmor` are installed from pinned releases with a verified
-SHA-256 checksum, so the CI never depends on an unpinned download.
+`actionlint`, `zizmor` and `git-cliff` are installed from pinned releases with
+a verified checksum, so the CI never depends on an unpinned download and never
+compiles a tool at run time.
+
+## Authentication
+
+The repository is public, so no service needs a stored credential:
+
+| Service | Authentication |
+|---|---|
+| Codecov, coverage and test results | OIDC (`use_oidc: true`, `id-token: write`) |
+| CodSpeed, benchmarks | OIDC (`id-token: write`) |
+| GitHub Pages, releases, attestations | the built-in `GITHUB_TOKEN` |
+
+Each job declares the permissions it needs, so the repository setting
+*Settings → Actions → General → Workflow permissions* may stay at its default
+value.
 
 ## Workflow dependency lockfile
 
@@ -91,8 +106,9 @@ and covers the released version only.
 
 The pipeline declares its own token permissions per job, so the repository
 setting *Settings → Actions → General → Workflow permissions* may stay at its
-default value. The secrets the workflow reads are listed in
-[SECRETS_SETUP.md](../SECRETS_SETUP.md).
+default value. The workflow needs no repository secret: the public repository
+authenticates every service through OpenID Connect, as
+[SECRETS_SETUP.md](../SECRETS_SETUP.md) explains.
 
 ## Local reproduction
 
