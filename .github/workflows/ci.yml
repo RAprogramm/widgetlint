@@ -219,9 +219,10 @@ jobs:
     needs: [clippy, docs]
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    continue-on-error: true
     permissions:
       contents: read
+      # OpenID Connect authentication with CodSpeed; no token secret needed.
+      id-token: write
     steps:
       - uses: actions/checkout@v7.0.1
         with:
@@ -230,12 +231,14 @@ jobs:
       - uses: taiki-e/install-action@v2.90.5
         with:
           tool: cargo-codspeed@6.0.0
-      - run: cargo codspeed build -p wl-size -p wl-check
+      - name: Build the benchmarks
+        run: >-
+          cargo codspeed build -m simulation --locked
+          -p wl-size -p wl-check -p wl-html -p wl-css -p wl-js -p wl-profile
       - name: Run the benchmarks
         uses: CodSpeedHQ/action@v5.6.3
         with:
           mode: simulation
-          token: ${{ secrets.CODSPEED_TOKEN }}
           run: cargo codspeed run
 
   pages:
