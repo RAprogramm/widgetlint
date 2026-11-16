@@ -172,3 +172,26 @@ mod default_counter {
         Ok(())
     }
 }
+
+mod helper_api {
+    use masterror::AppResult;
+
+    #[test]
+    fn compressed_size_matches_the_counter() -> AppResult<()> {
+        assert_eq!(wl_size::compressed_size(b"hello world")?, 19);
+        assert_eq!(wl_size::compressed_size(b"")?, 8);
+        Ok(())
+    }
+
+    #[test]
+    fn measure_reports_raw_and_compressed() -> AppResult<()> {
+        let data = b"<div>hello</div>";
+        let info = wl_size::SizeInfo::measure(data)?;
+        assert_eq!(info.raw, data.len());
+        assert!(
+            info.zlib9 > 0 && info.zlib9 < 100,
+            "small input compresses small"
+        );
+        Ok(())
+    }
+}

@@ -6,7 +6,7 @@
 use wl_profile::Profile;
 
 fn embedded() -> String {
-    wl_profile::PROFILE_1_TOML.to_owned()
+    wl_profile::PROFILE_1_TOML.replace("\r\n", "\n")
 }
 
 fn patched(needle: &str, replacement: &str) -> String {
@@ -142,4 +142,25 @@ fn rejects_zero_gesture() {
         error.to_string().contains("long_press_ms"),
         "message: {error}"
     );
+}
+
+#[test]
+fn rejects_document_text_below_value_units() {
+    let source = patched("text_document_units = 49152", "text_document_units = 1024");
+    let error =
+        Profile::from_toml(&source).expect_err("a document total below one value is invalid");
+    assert!(
+        error.to_string().contains("text_document_units"),
+        "message: {error}"
+    );
+}
+
+#[test]
+fn rejects_empty_spec_url() {
+    let source = patched(
+        "spec_url = \"https://core.telegram.org/bots/widgets.md\"",
+        "spec_url = \"\""
+    );
+    let error = Profile::from_toml(&source).expect_err("an empty spec url must be rejected");
+    assert!(error.to_string().contains("spec_url"), "message: {error}");
 }

@@ -479,3 +479,80 @@ fn sarif_names_stdin_and_maps_severities() -> AppResult<()> {
     assert!(stdout(&output).contains("\"note\""), "info maps to note");
     Ok(())
 }
+
+#[test]
+fn check_missing_directory_is_reported() -> AppResult<()> {
+    let missing = std::env::temp_dir().join(format!("wl-cli-missing-{}", std::process::id()));
+    let output = widgetlint(&["check", &path_of(&missing)])?;
+    assert!(!output.status.success(), "a missing directory must fail");
+    assert!(
+        stderr(&output).contains("cannot read"),
+        "{}",
+        stderr(&output)
+    );
+    Ok(())
+}
+
+#[test]
+fn size_over_budget_reports_warn_verdict() -> AppResult<()> {
+    let file = temp_widget("warnverdict.html", "<div>hello</div>")?;
+    let output = widgetlint(&["size", &path_of(&file), "--budget", "1", "--format", "json"])?;
+    assert_eq!(output.status.code(), Some(1), "over budget must fail");
+    let report: serde_json::Value = serde_json::from_str(stdout(&output).trim())
+        .map_err(|error| AppError::internal(format!("json: {error}")))?;
+    assert_eq!(report["verdict"], "warn");
+    Ok(())
+}
+
+#[test]
+fn check_demoted_rule_severities_follow_config() -> AppResult<()> {
+    let file = temp_widget("demote.html", "<script>fetch(\"/x\")</script>")?;
+    let warn_config = temp_widget("demote-warn.toml", "[rules]\nTGW400 = \"warn\"\n")?;
+    let output = widgetlint(&[
+        "check",
+        &path_of(&file),
+        "--config",
+        &path_of(&warn_config),
+        "--format",
+        "json"
+    ])?;
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "the demoted finding is no longer an error"
+    );
+    let info_config = temp_widget("demote-info.toml", "[rules]\nTGW400 = \"info\"\n")?;
+    let output = widgetlint(&[
+        "check",
+        &path_of(&file),
+        "--config",
+        &path_of(&info_config),
+        "--format",
+        "json"
+    ])?;
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "the demoted finding is info only"
+    );
+    Ok(())
+}
+
+#[test]
+fn check_fail_on_info_promotes_quiet_findings() -> AppResult<()> {
+    let file = temp_widget("failoninfo.html", "<input>")?;
+    let output = widgetlint(&[
+        "check",
+        &path_of(&file),
+        "--format",
+        "agent",
+        "--fail-on",
+        "info"
+    ])?;
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "warn findings fail at --fail-on info too"
+    );
+    Ok(())
+}

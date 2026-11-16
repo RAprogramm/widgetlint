@@ -31,7 +31,10 @@ struct Generated {
 
 /// Generates every documentation file, or verifies them when `check`.
 pub fn run(check: bool) -> AppResult<()> {
-    let root = workspace_root()?;
+    run_at(&workspace_root()?, check)
+}
+
+fn run_at(root: &Path, check: bool) -> AppResult<()> {
     let files = generate();
     if check {
         let stale: Vec<String> = files
@@ -196,4 +199,97 @@ fn llms_full(rules: &[&'static RuleMeta]) -> String {
         page.push_str(&rule_page(rule));
     }
     page
+}
+
+#[cfg(test)]
+mod tests {
+    use wl_core::{Confidence, Severity};
+
+    use super::*;
+
+    fn synthetic_rule(id: &'static str, help: Option<&'static str>) -> &'static RuleMeta {
+        Box::leak(Box::new(RuleMeta {
+            id,
+            default_severity: Severity::Warn,
+            confidence: Confidence::Certain,
+            title: "synthetic rule",
+            help,
+            spec: "https://core.telegram.org/bots/widgets"
+        }))
+    }
+
+    #[test]
+    fn category_maps_every_id_block() {
+        assert_eq!(category("TGW001"), "Size");
+        assert_eq!(category("TGW100"), "HTML and SVG");
+        assert_eq!(category("TGW200"), "CSS");
+        assert_eq!(category("TGW300"), "Document limits");
+        assert_eq!(category("TGW400"), "JavaScript");
+        assert_eq!(category("TGW"), "Other");
+    }
+
+    #[test]
+    fn generate_emits_one_page_per_rule_plus_indexes() {
+        let rules = wl_core::rule::all();
+        let files = generate();
+        assert_eq!(files.len(), rules.len() + 3);
+        for rule in &rules {
+            let expected = PathBuf::from(format!("docs/rules/{}.md", rule.id));
+            assert!(
+                files.iter().any(|file| file.path == expected),
+                "missing page for {}",
+                rule.id
+            );
+        }
+        for file in &files {
+            assert!(
+                file.content.starts_with(SPDX_HEADER),
+                "{} lacks the SPDX header",
+                file.path.display()
+            );
+        }
+    }
+
+    #[test]
+    fn rule_page_renders_fields_and_omits_missing_help() {
+        let with_help = synthetic_rule("TGW900", Some("do it differently"));
+        let without_help = synthetic_rule("TGW901", None);
+        let page = rule_page(with_help);
+        assert!(page.contains("# TGW900 — synthetic rule"));
+        assert!(page.contains("| Severity | `warn` |"));
+        assert!(page.contains("do it differently"));
+        assert!(page.contains("Spec: <https://core.telegram.org/bots/widgets>"));
+        let bare = rule_page(without_help);
+        assert!(
+            !bare.contains("do it differently"),
+            "missing help must render nothing"
+        );
+    }
+
+    #[test]
+    fn index_and_llms_reference_every_rule() {
+        let rules = wl_core::rule::all();
+        let index = index_page(&rules);
+        let llms = llms_index(&rules);
+        let full = llms_full(&rules);
+        for rule in &rules {
+            assert!(index.contains(rule.id), "index misses {}", rule.id);
+            assert!(llms.contains(rule.id), "llms.txt misses {}", rule.id);
+            assert!(full.contains(rule.id), "llms-full.txt misses {}", rule.id);
+        }
+        assert!(index.contains("## CSS"), "index must group by category");
+    }
+
+    #[test]
+    fn run_at_writes_then_verifies_and_detects_stale() -> AppResult<()> {
+        let root = std::env::temp_dir().join(format!("xtask-docs-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&root);
+        run_at(&root, false)?;
+        run_at(&root, true)?;
+        std::fs::write(root.join("docs/rules/index.md"), "stale")?;
+        let error = run_at(&root, true).expect_err("stale docs must be rejected");
+        assert!(error.to_string().contains("index.md"), "message: {error}");
+        std::fs::remove_dir_all(&root)?;
+        Ok(())
+    }
 }

@@ -17,7 +17,8 @@ use std::process::ExitCode;
 use masterror::AppResult;
 
 fn main() -> ExitCode {
-    match run() {
+    let task = std::env::args().nth(1).unwrap_or_default();
+    match dispatch(&task) {
         Ok(()) => ExitCode::SUCCESS,
         Err(error) => {
             let text = error
@@ -30,13 +31,41 @@ fn main() -> ExitCode {
     }
 }
 
-fn run() -> AppResult<()> {
-    let task = std::env::args().nth(1).unwrap_or_default();
-    match task.as_str() {
+/// Runs one task by name.
+///
+/// * `task` — `gen-docs`, `check-docs` or an unknown name.
+///
+/// # Errors
+///
+/// [`masterror::AppError`] with `BadRequest` taxonomy for unknown tasks, or the
+/// task's own error.
+fn dispatch(task: &str) -> AppResult<()> {
+    match task {
         "gen-docs" => gen_docs::run(false),
         "check-docs" => gen_docs::run(true),
         other => Err(masterror::AppError::bad_request(format!(
             "unknown task '{other}'; available: gen-docs, check-docs"
         )))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unknown_task_is_rejected() {
+        let error = dispatch("nope").expect_err("unknown task must be rejected");
+        assert!(error.to_string().contains("nope"), "message: {error}");
+    }
+
+    #[test]
+    fn empty_task_is_rejected() {
+        assert!(dispatch("").is_err(), "missing task name must be rejected");
+    }
+
+    #[test]
+    fn check_docs_succeeds_on_a_fresh_tree() {
+        dispatch("check-docs").expect("committed docs must be fresh");
     }
 }

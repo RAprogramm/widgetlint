@@ -97,3 +97,35 @@ fn empty_spans_are_recognized() {
     assert!(Span::new(4, 4).is_empty());
     assert!(!Span::new(4, 5).is_empty());
 }
+
+#[test]
+fn finding_builders_attach_help_and_span() {
+    let rule = lookup("TGW100").expect("TGW100 exists");
+    let finding = Finding::new(rule, "boom").with_help("use buttons");
+    assert_eq!(finding.help.as_deref(), Some("use buttons"));
+    let spanned = finding.with_span(Span::new(0, 6), Region::Html);
+    assert_eq!(spanned.span, Some(Span::new(0, 6)));
+    assert_eq!(spanned.region, Region::Html);
+}
+
+#[test]
+fn region_names_are_stable() {
+    assert_eq!(Region::Html.as_str(), "html");
+    assert_eq!(Region::Css.as_str(), "css");
+    assert_eq!(Region::Js.as_str(), "js");
+    assert_eq!(Region::Size.as_str(), "size");
+}
+
+#[test]
+fn report_summary_counts_every_severity() {
+    let rule = lookup("TGW100").expect("TGW100 exists");
+    let mut error = Finding::new(rule, "e");
+    error.severity = Severity::Error;
+    let warn = Finding::new(rule, "w");
+    let mut info = Finding::new(rule, "i");
+    info.severity = Severity::Info;
+    let report = Report::build(Some("w.html"), "<input>", None, &[error, warn, info]);
+    assert_eq!(report.summary.error, 1);
+    assert_eq!(report.summary.warn, 1);
+    assert_eq!(report.summary.info, 1);
+}
