@@ -203,8 +203,8 @@ widget failures, you can support its maintenance:
 - ⭐ Star the repository — it is the cheapest way to help.
 - 🐛 Report a widget that the linter misses. A real broken widget is the most
   valuable input the project can get.
-- 💖 [Sponsor RAprogramm on GitHub](https://github.com/sponsors/RAprogramm).
-  Sponsorship funds the time spent on new rules, on tracking Telegram Bot API
+- 💖 [Sponsor the work](https://github.com/RAprogramm/RAprogramm/blob/main/SPONSOR.md).
+  Support funds the time spent on new rules, on tracking Telegram Bot API
   updates, and on keeping the WASM playground alive.
 
 ## License
