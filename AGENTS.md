@@ -32,6 +32,8 @@ wasm-pack build crates/wl-wasm --target web --out-dir ../../playground/pkg
 - `crates/wl-js` — JavaScript rules on the oxc parser.
 - `crates/wl-check` — end-to-end pipeline: every region, suppressions, config.
 - `crates/wl-cli` — the `widgetlint` binary.
+- `crates/wl-mcp` — Model Context Protocol server exposing the pipeline
+  as stdio tools (`check`, `verify`, `explain`, `rules`, `schema`).
 - `crates/wl-wasm` — browser build of the pipeline; standalone crate (own
   `[workspace]`) so the pure-Rust zlib backend never meets the C one.
 - `crates/xtask` — build tasks (documentation generation).
