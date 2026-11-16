@@ -273,19 +273,19 @@ impl TreeSink for HtmlSink {
 
     fn reparent_children(&self, node: &Self::Handle, new_parent: &Self::Handle) {
         let mut nodes = self.nodes.borrow_mut();
-        let Some(mut children) = nodes
+        let Some(children) = nodes
             .get_mut(*node as usize)
             .map(|n| std::mem::take(&mut n.children))
         else {
             return;
         };
-        if let Some(new_parent) = nodes.get_mut(*new_parent as usize) {
-            new_parent.children.append(&mut children);
-        }
-        for child in children {
+        for child in children.iter().copied() {
             if let Some(child) = nodes.get_mut(child as usize) {
                 child.parent = Some(*new_parent);
             }
+        }
+        if let Some(new_parent) = nodes.get_mut(*new_parent as usize) {
+            new_parent.children.extend_from_slice(&children);
         }
     }
 

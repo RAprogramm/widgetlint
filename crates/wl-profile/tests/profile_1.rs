@@ -116,3 +116,30 @@ fn rejects_empty_list() {
     assert!(source != embedded(), "patch must apply");
     assert!(Profile::from_toml(&source).is_err());
 }
+
+#[test]
+fn rejects_invalid_svg_element_name() {
+    let source = patched("\"clipPath\",", "\"clip path!\",");
+    let error = Profile::from_toml(&source).expect_err("invalid svg name must be rejected");
+    assert!(
+        error.to_string().contains("SVG element name"),
+        "message: {error}"
+    );
+}
+
+#[test]
+fn rejects_js_identifier_with_whitespace() {
+    let source = patched("\"fetch\",", "\"fetch now\",");
+    let error = Profile::from_toml(&source).expect_err("whitespace id must be rejected");
+    assert!(error.to_string().contains("whitespace"), "message: {error}");
+}
+
+#[test]
+fn rejects_zero_gesture() {
+    let source = patched("long_press_ms = 500", "long_press_ms = 0");
+    let error = Profile::from_toml(&source).expect_err("zero gesture must be rejected");
+    assert!(
+        error.to_string().contains("long_press_ms"),
+        "message: {error}"
+    );
+}

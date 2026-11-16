@@ -320,11 +320,6 @@ impl Scanner<'_> {
             self.pos = content_start;
             return (None, None);
         }
-        if name == "plaintext" {
-            let span = sp(content_start, self.src.len());
-            self.pos = self.src.len();
-            return (Some(span), None);
-        }
         let needle = format!("</{name}");
         let Some(close) = find_ci(self.src, needle.as_bytes(), content_start) else {
             let span = sp(content_start, self.src.len());
@@ -419,8 +414,9 @@ fn decode_entities(text: &str) -> String {
 }
 
 fn parse_entity(rest: &str) -> Option<(String, usize)> {
-    let end = rest.get(1..=10)?.find(';')?;
-    let body = rest.get(1..end)?;
+    let head = rest.get(1..)?;
+    let end = head.find(';').filter(|&position| position < 10)?;
+    let body = head.get(..end)?;
     let code = if let Some(hex) = body.strip_prefix("#x").or_else(|| body.strip_prefix("#X")) {
         u32::from_str_radix(hex, 16).ok()?
     } else if let Some(dec) = body.strip_prefix('#') {
@@ -435,7 +431,7 @@ fn parse_entity(rest: &str) -> Option<(String, usize)> {
             "nbsp" => "\u{a0}",
             _ => return None
         };
-        return Some((named.to_owned(), end + 1));
+        return Some((named.to_owned(), end + 2));
     };
-    Some((char::from_u32(code)?.to_string(), end + 1))
+    Some((char::from_u32(code)?.to_string(), end + 2))
 }

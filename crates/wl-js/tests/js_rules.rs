@@ -218,3 +218,15 @@ fn clean_script_has_no_findings() -> AppResult<()> {
          };"
     )
 }
+
+#[test]
+fn location_chains_and_exotic_shapes_are_handled() -> AppResult<()> {
+    assert_rule("window.location.href = 'x'", "TGW401")?;
+    assert_rule("location.href = 'x'", "TGW401")?;
+    assert_clean("window[\"location\"].href = 'x'")?;
+    assert_clean("f()[\"location\"].href = 'x'")?;
+    assert_clean("a[0] = 1")?;
+    assert_clean("window[\"alert\"]('x')")?;
+    assert_clean("el.getContext(x)")?;
+    Ok(())
+}

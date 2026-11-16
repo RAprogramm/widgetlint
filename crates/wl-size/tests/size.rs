@@ -158,3 +158,17 @@ mod status_tests {
         Ok(())
     }
 }
+
+mod default_counter {
+    use masterror::AppResult;
+    use wl_size::ZlibCounter;
+
+    #[test]
+    fn default_counter_matches_new() -> AppResult<()> {
+        let data = b"<div>hello</div>";
+        let mut default = ZlibCounter::default();
+        let mut fresh = ZlibCounter::new();
+        assert_eq!(default.compressed_len(data)?, fresh.compressed_len(data)?);
+        Ok(())
+    }
+}

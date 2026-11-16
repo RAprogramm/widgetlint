@@ -91,3 +91,9 @@ fn file_wide_disable_covers_spanless_findings() {
     suppressions.add_file(&[]);
     assert!(suppressions.is_suppressed("TGW002", None));
 }
+
+#[test]
+fn empty_spans_are_recognized() {
+    assert!(Span::new(4, 4).is_empty());
+    assert!(!Span::new(4, 5).is_empty());
+}

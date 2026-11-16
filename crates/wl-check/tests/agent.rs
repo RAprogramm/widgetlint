@@ -212,3 +212,110 @@ fn schema_is_valid_json_with_the_report_fields() -> AppResult<()> {
     }
     Ok(())
 }
+
+#[test]
+fn info_findings_shape_the_report() -> AppResult<()> {
+    let report = report_for("<marquee>x</marquee>", &AgentOptions::default())?;
+    assert_eq!(report.verdict, "pass");
+    assert_eq!(report.counts.info, 1);
+    assert_eq!(report.reason, "1 info(s)");
+    assert_eq!(
+        report.next_action,
+        "no blocking findings; info items are advisory"
+    );
+    assert!(
+        report
+            .caveats
+            .iter()
+            .any(|caveat| caveat.contains("heuristic")),
+        "a heuristic finding must warn about false positives"
+    );
+    Ok(())
+}
+
+#[test]
+fn unknown_css_property_adds_the_curated_table_caveat() -> AppResult<()> {
+    let report = report_for("<style>not-a-property: 1px;</style>", &warn_options())?;
+    assert!(report.findings.iter().any(|finding| finding.id == "TGW216"));
+    assert!(
+        report
+            .caveats
+            .iter()
+            .any(|caveat| caveat.contains("curated table")),
+        "TGW216 must disclose the curated property table"
+    );
+    Ok(())
+}
+
+#[test]
+fn identical_lines_group_under_one_fingerprint() -> AppResult<()> {
+    let report = report_for("<input>\n<input>\n", &warn_options())?;
+    let group = report.findings.first().expect("one group");
+    assert_eq!(group.id, "TGW100");
+    assert_eq!(group.repeat, 2, "both findings share the fingerprint");
+    assert_eq!(group.lines, vec![1, 2], "both lines are listed");
+    Ok(())
+}
+
+#[test]
+fn promoted_errors_shape_the_report() -> AppResult<()> {
+    let mut config = Config::default();
+    config
+        .rules
+        .insert("TGW100".to_owned(), wl_check::config::RuleAction::Error);
+    let source = "<input>";
+    let checked = check(source, &profile()?, &config)?;
+    let report = wl_check::agent::report("widget.html", source, &checked, &warn_options());
+    assert_eq!(report.verdict, "fail");
+    assert_eq!(report.counts.error, 1);
+    assert_eq!(report.reason, "1 error(s)");
+    assert_eq!(
+        report.next_action,
+        "fix the error findings above, then re-run widgetlint check"
+    );
+    Ok(())
+}
+
+#[test]
+fn oversized_widget_points_at_the_size_limit() -> AppResult<()> {
+    let mut state = 0x1234_5678_u32;
+    let mut body = String::from("<div>");
+    for _ in 0..30_000 {
+        state = state.wrapping_mul(1_103_515_245).wrapping_add(12_345);
+        body.push((b'a' + ((state >> 16) % 26) as u8) as char);
+    }
+    body.push_str("</div>");
+    let report = report_for(&body, &warn_options())?;
+    let size_group = report
+        .findings
+        .iter()
+        .find(|finding| finding.id == "TGW002")
+        .expect("the compressed size is over the hard limit");
+    assert!(
+        size_group.r#where.is_none(),
+        "document-wide findings carry no position"
+    );
+    assert_eq!(
+        report.next_action,
+        "reduce the compressed size below the hard limit, then re-run widgetlint check"
+    );
+    Ok(())
+}
+
+#[test]
+fn long_messages_are_capped() -> AppResult<()> {
+    let property = "q".repeat(300);
+    let source = format!("<style>{property}: 1;</style>");
+    let report = report_for(&source, &warn_options())?;
+    let group = report
+        .findings
+        .iter()
+        .find(|finding| finding.id == "TGW216")
+        .expect("the long property name is unknown");
+    assert!(group.msg.ends_with("..."), "the message must be capped");
+    assert!(
+        group.msg.chars().count() <= 203,
+        "cap is 200 plus the ellipsis"
+    );
+    Ok(())
+}

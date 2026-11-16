@@ -31,6 +31,15 @@ impl Span {
     }
 
     /// Whether the span covers no bytes.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use wl_core::Span;
+    ///
+    /// assert!(Span::new(4, 4).is_empty());
+    /// assert!(!Span::new(4, 5).is_empty());
+    /// ```
     #[must_use]
     pub const fn is_empty(self) -> bool {
         self.end <= self.start

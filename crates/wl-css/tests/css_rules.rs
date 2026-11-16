@@ -315,3 +315,12 @@ fn findings_are_sorted_by_position() -> AppResult<()> {
     assert_eq!(starts, sorted);
     Ok(())
 }
+
+#[test]
+fn scanner_survives_strings_escapes_and_stray_semicolons() -> AppResult<()> {
+    assert_clean(";p { color: red }")?;
+    assert_clean("p:not(\"a\\\\b\") { color: red }")?;
+    assert_clean("p { transform: translate(1px, 2px) }")?;
+    assert_rule("p { font-family: local(x), serif }", "TGW215")?;
+    Ok(())
+}
