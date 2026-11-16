@@ -2334,7 +2334,7 @@ checksum = "8c3b93199df0ab874cdf0c6a94f0a0dc3423fe41f1cafb62b8bd7b1deb277aef"
 
 [[package]]
 name = "wl-check"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "codspeed-criterion-compat",
  "masterror",
@@ -2351,7 +2351,7 @@ dependencies = [
 
 [[package]]
 name = "wl-cli"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "clap",
  "globset",
@@ -2369,7 +2369,7 @@ dependencies = [
 
 [[package]]
 name = "wl-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "masterror",
  "serde",
@@ -2379,7 +2379,7 @@ dependencies = [
 
 [[package]]
 name = "wl-css"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "codspeed-criterion-compat",
  "masterror",
@@ -2389,7 +2389,7 @@ dependencies = [
 
 [[package]]
 name = "wl-html"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "codspeed-criterion-compat",
  "html5ever",
@@ -2401,7 +2401,7 @@ dependencies = [
 
 [[package]]
 name = "wl-js"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "codspeed-criterion-compat",
  "masterror",
@@ -2431,7 +2431,7 @@ dependencies = [
 
 [[package]]
 name = "wl-profile"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "codspeed-criterion-compat",
  "masterror",
@@ -2441,7 +2441,7 @@ dependencies = [
 
 [[package]]
 name = "wl-size"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "codspeed-criterion-compat",
  "flate2",
@@ -2459,7 +2459,7 @@ checksum = "3ad82d2a33cdc9674dc7465672f271e096168fcdbe0f799d9e6db8c5892679dc"
 
 [[package]]
 name = "xtask"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "masterror",
  "wl-core",
