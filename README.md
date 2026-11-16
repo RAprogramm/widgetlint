@@ -1,90 +1,126 @@
 <!-- SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com> -->
 <!-- SPDX-License-Identifier: MIT -->
 
+<div align="center">
+
 # widgetlint
 
-Validator and linter for Telegram Bot API 10.4 widgets.
+**Validator and linter for Telegram Bot API 10.4 widgets**
 
-Widgets are HTML/CSS/JS blocks rendered inside a message bubble in a QuickJS
-sandbox with no network. The server accepts at most 32768 bytes of HTML and
-4096 bytes after zlib level 9 compression; the client silently drops anything
-outside the widget profile. `widgetlint` catches all of it before sending.
+Everything the client silently strips and everything the server refuses —
+caught before you send.
 
-## Status
+[![CI](https://github.com/RAprogramm/telegram-widget-lint/actions/workflows/ci.yml/badge.svg)](https://github.com/RAprogramm/telegram-widget-lint/actions/workflows/ci.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![MSRV](https://img.shields.io/badge/rust-1.100%2B-orange.svg)](rust-toolchain.toml)
+[![rules](https://img.shields.io/badge/rules-50-green)](docs/rules/index.md)
+[![playground](https://img.shields.io/badge/playground-live-informational)](https://raprogramm.github.io/telegram-widget-lint/)
 
-Milestone M1: `check` (HTML, CSS and JavaScript rules with exact spans),
-`size` (exact compressed-size counter with byte-for-byte parity against the
-Python `zlib` reference), `verify`, `explain`, `rules`, `schema` and
-`version`. The agent report (`--format agent`) is the machine contract for
-LLM fix loops. The optimizer (`pack`) and the simulator (`sim`) follow per the
-roadmap in `widget-linter-spec.md`.
+</div>
 
-## Install
+![widgetlint playground: a broken widget caught with exact spans and fix hints](docs/assets/playground.png)
+
+## Why this exists
+
+A Telegram widget is an HTML/CSS/JS block rendered inside a message bubble in
+a QuickJS sandbox with **no network**. It fails in two silent ways:
+
+- **The server refuses it.** At most 32768 bytes of HTML and 4096 bytes after
+  zlib level 9 compression — one byte over and the send fails.
+- **The client silently strips it.** `<input>`, `fetch`, `alert()`,
+  `position: sticky`, 3D transforms and dozens more are dropped or rewritten
+  with no error, no warning, no console. You find out on a real phone.
+
+`widgetlint` turns both failure classes into precise, actionable findings —
+with exact spans, a fix hint and a stable fingerprint — from your editor,
+your CI, or an LLM fix loop.
+
+## Quick start
 
 ```console
 cargo install --path crates/wl-cli
+widgetlint check widget.html
 ```
 
-## Usage
-
-```console
-$ widgetlint check widgets/order.html
-widgets/order.html
+```text
+widget.html
   warn   TGW100  <input> is removed together with its content    14:3
          help: widgets have no input fields; use buttons and state instead
   error  TGW400  network API `fetch` is disabled in widgets    41:5
          help: widgets have no network access; ask the bot with TelegramWidget.requestSendData
-2 errors, 3 warnings, 0 info
-
-$ widgetlint check widgets/order.html --format json
-[{"schema_version":1,"input":{"path":"widgets/order.html","bytes":31204}, ... }]
-
-$ widgetlint check widgets/ --format sarif --fail-on warn > widgetlint.sarif
-
-$ widgetlint size widgets/order.html
-widgets/order.html: 31204 B -> 4231 B (zlib-9)    limit 4096    budget 3800    fail (+135)
-
-$ widgetlint explain TGW100
-TGW100  warn  certain
-form controls are removed together with their content
-help: widgets have no input fields; use buttons and state instead
-spec: https://core.telegram.org/bots/widgets#html
+1 error, 1 warning, 0 info
 ```
 
-`check` accepts files, directories and `-` for stdin; reads `widgetlint.toml`
-from the working directory (thresholds, rule on/off and severity overrides,
-path filters). Inline suppressions: `<!-- tgw-disable TGW100 -->`,
-`<!-- tgw-disable-file TGW606 -->`, `// tgw-disable-next-line TGW400`.
+Or try it right now in the browser: **[live playground](https://raprogramm.github.io/telegram-widget-lint/)**
+— the whole checker runs locally in WebAssembly, nothing is uploaded.
 
-## AI agents
+## For humans
 
 ```console
-$ widgetlint verify widgets/order.html
-{"input":"widgets/order.html","next_action":"fix the error findings above, then re-run widgetlint check","reason":"1 error(s), 5 warning(s)","schema_version":1,"verdict":"fail"}
-
-$ widgetlint check widgets/order.html --format agent --fail-on warn
-{"schema_version":1,"verdict":"fail","reason":"1 error(s), 5 warning(s)","budget":{...},"findings":[{"fp":"1dffa306","id":"TGW400","sev":"error","msg":"...","fix":{"applicability":"manual","hint":"..."},"repeat":1,...}],...}
+widgetlint check widgets/            # files, directories or - for stdin
+widgetlint size widget.html          # exact zlib-9 size vs the hard limit and the budget
+widgetlint explain TGW400            # what a rule means and how to fix it
+widgetlint rules                     # the full rule reference
 ```
 
-`verify` is the minimal verdict between edits; `--format agent` is the full
-compact report: grouped repeats, fingerprints (`fp`), caveats, suppression
-statistics and one `next_action`. `--since <fp-file>` reports only findings
-new since the previous run plus resolved fingerprints; `--max-findings` caps
-the report size. The JSON Schema is published by `widgetlint schema`;
-`widgetlint version --json` carries the tool and ruleset identity. A ready
-`AGENTS.md` snippet for widget projects lives in [docs/agents.md](docs/agents.md).
+- **CI**: `widgetlint check --format sarif --fail-on error > r.sarif` feeds
+  GitHub Code Scanning; exit codes `0` pass, `1` findings, `2` usage error.
+- **Config**: `widgetlint.toml` in the working directory — thresholds, rule
+  on/off and severity overrides, path include/exclude filters.
+- **Suppressions in source**: `<!-- tgw-disable TGW100 -->`,
+  `<!-- tgw-disable-file TGW100 -->`, `// tgw-disable-next-line TGW400`.
+- **Size**: `size` reports raw and zlib-9 bytes with byte-for-byte parity
+  against the Python `zlib` reference the Telegram server uses.
 
-Exit codes: `0` no findings at or above the threshold, `1` findings present,
-`2` usage or input error, `3` internal error. The threshold is `--fail-on`.
+## For AI agents
 
-## Documentation
+The machine surface is designed for LLM fix loops — an agent that generates
+widget code cannot know Telegram's restrictions, so it verifies instead:
 
-- Rule reference: [docs/rules/index.md](docs/rules/index.md) — one page per
-  rule, generated from the rule registry.
-- AI agents: [llms.txt](llms.txt) and [llms-full.txt](llms-full.txt), plus the
-  ready `AGENTS.md` snippet in [docs/agents.md](docs/agents.md).
-- Machine output: `check --format json|sarif|agent`, `rules --format json`,
-  `schema`, `version --json`.
+```console
+widgetlint check widget.html --format agent   # compact JSON report
+widgetlint verify widget.html                 # minimal verdict between edits
+widgetlint verify widget.html --since fp.txt  # only findings new since last run
+widgetlint schema                             # JSON Schema of the report
+```
+
+```json
+{"verdict":"fail","reason":"1 error(s), 2 warning(s)",
+ "findings":[{"fp":"707112e9","id":"TGW400","sev":"error",
+   "msg":"network API `fetch` is disabled in widgets",
+   "where":{"line":3,"col":9},"fix":{"hint":"..."},"repeat":1}],
+ "next_action":"fix the error findings above, then re-run widgetlint check"}
+```
+
+Findings are grouped with stable fingerprints, texts are capped for token
+budgets, and `caveats` honestly disclose where a rule is heuristic. Paste the
+ready agent instructions from [docs/agents.md](docs/agents.md) into your
+widget project, and feed your model [llms.txt](llms.txt) or
+[llms-full.txt](llms-full.txt) for the full rule reference.
+
+## Rules
+
+50 rules, all derived from the official
+[widget documentation](https://core.telegram.org/bots/widgets), driven by a
+single TOML ruleset — code, docs and machine output never disagree:
+
+| Range | Region | Covers |
+|---|---|---|
+| TGW001–005 | size | raw and compressed limits, budget, invalid UTF-8 |
+| TGW100–150 | HTML | stripped elements, dead attributes, SVG, schemes |
+| TGW200–216 | CSS | unsupported features, fonts, unknown properties |
+| TGW300–304 | limits | CSS rules, DOM nodes, text totals |
+| TGW400–411 | JS | network, navigation, dialogs, focus, canvas |
+
+Full reference: [docs/rules/index.md](docs/rules/index.md) — one page per
+rule with spec links, generated from the ruleset.
+
+## Status
+
+Milestone M1 is complete: `check`, `size`, `verify`, `explain`, `rules`,
+`schema`, `version`, the agent report and the WASM playground. The optimizer
+(`pack`) and the client simulator (`sim`) follow per the roadmap in
+[widget-linter-spec.md](widget-linter-spec.md).
 
 ## Development
 
@@ -98,9 +134,9 @@ uv run --python 3.12 tools/zlib_parity.py   # size parity against real zlib
 cargo run -p xtask -- gen-docs              # regenerate rule docs and llms.txt
 ```
 
-The browser playground (`playground/`) is built from the standalone
-`crates/wl-wasm` crate (it swaps the size engine to the pure-Rust zlib
-backend, so it lives outside the workspace on purpose):
+The playground is built from the standalone `crates/wl-wasm` crate (it swaps
+the size engine to the pure-Rust zlib backend, so it lives outside the
+workspace on purpose):
 
 ```console
 wasm-pack build crates/wl-wasm --target web --out-dir ../../playground/pkg
