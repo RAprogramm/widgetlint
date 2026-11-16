@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Bug Fixes
 
 - Show a warning verdict state for non-blocking findings in the playground ([81b7f8b](https://github.com/RAprogramm/widgetlint/commit/81b7f8bc3cd96e65d292a6026a84152537fa2fb4))
+- Keep the release chain alive when path filters skip jobs ([265d3cf](https://github.com/RAprogramm/widgetlint/commit/265d3cf35e4da4b59855028227c3f0b71d645d03))
 
 ### Documentation
 
