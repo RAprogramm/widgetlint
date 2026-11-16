@@ -8,6 +8,17 @@ All notable changes to widgetlint will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-11-16
+
+### Bug Fixes
+
+- Preserve the SPDX header and hide bookkeeping commits in generated changelogs ([5c2b8ea](https://github.com/RAprogramm/widgetlint/commit/5c2b8eaa832bb71d23639e2fe4701713a66180e8))
+
+### CI/CD
+
+- Install the cross-compilation target in release builds ([b1773f2](https://github.com/RAprogramm/widgetlint/commit/b1773f20c3ed2919581b3ccdd1cd63b86a79bf8b))
+
+
 ## [0.1.0] - 2026-11-16
 
 ### Features
