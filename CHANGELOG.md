@@ -13,10 +13,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Bug Fixes
 
 - Preserve the SPDX header and hide bookkeeping commits in generated changelogs ([5c2b8ea](https://github.com/RAprogramm/widgetlint/commit/5c2b8eaa832bb71d23639e2fe4701713a66180e8))
+- Align the wl-mcp lockfile version with the workspace ([d48eb3f](https://github.com/RAprogramm/widgetlint/commit/d48eb3f9bb233e7296940e9709fe8a3fb194e3b6))
+- Read the version from the manifest in the version command test ([2d3b4a7](https://github.com/RAprogramm/widgetlint/commit/2d3b4a7b17369cbf1121269cc55c769b92caf8f3))
+
+### Documentation
+
+- List the wl-mcp crate in the repository layout ([eb6311e](https://github.com/RAprogramm/widgetlint/commit/eb6311e3dc00b1ff544da4db50814980c70a8222))
 
 ### CI/CD
 
 - Install the cross-compilation target in release builds ([b1773f2](https://github.com/RAprogramm/widgetlint/commit/b1773f20c3ed2919581b3ccdd1cd63b86a79bf8b))
+- Make the release pipeline idempotent and move the floating tag to the release job ([7af4f45](https://github.com/RAprogramm/widgetlint/commit/7af4f453105bf32ceccebacf75b2b7c4fd3c42fa))
 
 
 ## [0.1.0] - 2026-11-16
