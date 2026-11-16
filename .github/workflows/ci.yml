@@ -544,6 +544,8 @@ jobs:
         with:
           ref: v${{ needs.release-gate.outputs.version }}
           persist-credentials: false
+      - name: Add the target
+        run: rustup target add "${{ matrix.target }}"
       - name: Build
         run: >-
           cargo build --release --locked -p wl-cli --target ${{ matrix.target }}
