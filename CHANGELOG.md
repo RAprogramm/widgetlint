@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com> -->
+<!-- SPDX-License-Identifier: MIT -->
+
 # Changelog
 
 All notable changes to widgetlint will be documented in this file.

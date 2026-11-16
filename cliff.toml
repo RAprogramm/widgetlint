@@ -7,6 +7,9 @@
 [changelog]
 # Header template
 header = """
+<!-- SPDX-FileCopyrightText: 2026 RAprogramm <andrey.rozanov.vl@gmail.com> -->
+<!-- SPDX-License-Identifier: MIT -->
+
 # Changelog
 
 All notable changes to widgetlint will be documented in this file.
@@ -60,6 +63,7 @@ commit_parsers = [
     # to the pipeline, or its commits leak into the changelog and the bump
     { message = "^Merge ", skip = true },
     { message = "^chore: bump version to", skip = true },
+    { message = "^docs: update changelog for", skip = true },
     { message = "^feat", group = "<!-- 0 -->Features" },
     { message = "^fix", group = "<!-- 1 -->Bug Fixes" },
     { message = "^perf", group = "<!-- 2 -->Performance" },
