@@ -12,8 +12,8 @@ workflows:
         - 'actions/upload-artifact@v7.0.2'
         - 'actions/upload-pages-artifact@v5.0.0'
         - 'codecov/codecov-action@v7.1.1'
-        - 'codecov/test-results-action@v1.2.1'
         - 'codspeedhq/action@v5.6.3'
+        - 'dorny/paths-filter@v4.0.3'
         - 'dtolnay/rust-toolchain@v1'
         - 'embarkstudios/cargo-deny-action@v2.1.1'
         - 'fsfe/reuse-action@v6.0.0'
@@ -92,11 +92,6 @@ dependencies:
         repo_id: 200299178
         uses:
             - 'actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd'
-    'codecov/test-results-action@v1.2.1':
-        ref: 'v1.2.1'
-        commit: 'sha1-0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3'
-        owner_id: 8226205
-        repo_id: 761956558
     'codspeedhq/action@v5.6.3':
         ref: 'v5.6.3'
         commit: 'sha1-af75f77f17a054769abefaa42fe8dc2975469b5f'
@@ -105,6 +100,11 @@ dependencies:
         uses:
             - 'actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7'
             - 'actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd'
+    'dorny/paths-filter@v4.0.3':
+        ref: 'v4.0.3'
+        commit: 'sha1-ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d'
+        owner_id: 1588572
+        repo_id: 265601040
     'dtolnay/rust-toolchain@v1':
         ref: 'v1'
         commit: 'sha1-683b588c487a69d01f6c6ddf40f036ff682cc2c8'

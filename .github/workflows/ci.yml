@@ -6,7 +6,6 @@ name: ci
 on:
   push:
     branches: [main]
-    tags: ["v*"]
   pull_request: {}
   workflow_dispatch: {}
 
@@ -24,10 +23,48 @@ concurrency:
 
 jobs:
   # ==========================================================================
+  # Stage 0 — classify what changed so later stages skip untouched work.
+  # ==========================================================================
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      rust: ${{ steps.filter.outputs.rust == 'true' || github.event_name == 'workflow_dispatch' }}
+      playground: ${{ steps.filter.outputs.playground == 'true' || github.event_name == 'workflow_dispatch' }}
+      deny: ${{ steps.filter.outputs.deny == 'true' || github.event_name == 'workflow_dispatch' }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dorny/paths-filter@v4.0.3
+        id: filter
+        with:
+          filters: |
+            rust:
+              - 'crates/**'
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+              - 'ruleset/**'
+              - 'rust-toolchain.toml'
+              - '.config/nextest.toml'
+              - 'tools/**'
+            playground:
+              - 'playground/**'
+            deny:
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+              - 'deny.toml'
+
+  # ==========================================================================
   # Stage 1 — instant feedback, no workspace compilation.
   # ==========================================================================
   fmt:
     name: Formatting
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -81,6 +118,8 @@ jobs:
 
   supply-chain:
     name: Supply chain
+    needs: changes
+    if: needs.changes.outputs.deny == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -97,6 +136,8 @@ jobs:
   # ==========================================================================
   clippy:
     name: Clippy
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
@@ -128,6 +169,8 @@ jobs:
 
   docs:
     name: Documentation
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
@@ -191,6 +234,9 @@ jobs:
           flags: rust
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
+          # A Codecov outage must not redden the pipeline; the step still shows
+          # the failure, the local 95% gate above stays hard.
+          continue-on-error: true
       - name: Upload test results to Codecov
         uses: codecov/codecov-action@v7.1.1
         with:
@@ -199,6 +245,7 @@ jobs:
           report_type: test_results
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
+          continue-on-error: true
 
   zlib-parity:
     name: zlib parity
@@ -241,11 +288,17 @@ jobs:
         with:
           mode: simulation
           run: cargo codspeed run
+          # A CodSpeed outage must not redden the pipeline; the local build of
+          # the benchmarks above stays hard.
+          continue-on-error: true
 
   pages:
     name: Playground build
-    needs: [clippy, docs]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [changes, clippy, docs]
+    if: >-
+      github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+      (needs.changes.outputs.rust == 'true' ||
+       needs.changes.outputs.playground == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -315,8 +368,8 @@ jobs:
   # ==========================================================================
   version-bump:
     name: Version bump
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs:
+      - changes
       - fmt
       - compliance
       - supply-chain
@@ -326,6 +379,14 @@ jobs:
       - coverage
       - zlib-parity
       - release-build
+    # Path filters skip untouched jobs, so success means "nothing that ran
+    # failed", not "every job ran".
+    if: >-
+      always() &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      !contains(needs.*.result, 'failure') &&
+      !contains(needs.*.result, 'cancelled')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -431,6 +492,7 @@ jobs:
   release-gate:
     name: Release gate
     needs:
+      - changes
       - fmt
       - compliance
       - supply-chain
@@ -443,20 +505,9 @@ jobs:
       - version-bump
     if: >-
       always() &&
-      needs.fmt.result == 'success' &&
-      needs.compliance.result == 'success' &&
-      needs.supply-chain.result == 'success' &&
-      needs.clippy.result == 'success' &&
-      needs.docs.result == 'success' &&
-      needs.test.result == 'success' &&
-      needs.coverage.result == 'success' &&
-      needs.zlib-parity.result == 'success' &&
-      needs.release-build.result == 'success' &&
-      (
-        (github.event_name == 'push' &&
-          startsWith(github.ref, 'refs/tags/v')) ||
-        needs.version-bump.outputs.version_bumped == 'true'
-      )
+      !contains(needs.*.result, 'failure') &&
+      !contains(needs.*.result, 'cancelled') &&
+      needs.version-bump.outputs.version_bumped == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
