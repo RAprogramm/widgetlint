@@ -214,8 +214,6 @@ Design documents: `widget-linter-spec.md`, `widget-linter-engineering.md`,
 `widget-linter-ai-native.md`.
 
 The CI pipeline and the release flow are described in [docs/ci.md](docs/ci.md).
-The repository needs no secrets: every service authenticates through OpenID
-Connect, as [SECRETS_SETUP.md](SECRETS_SETUP.md) explains.
 
 ## Support
 

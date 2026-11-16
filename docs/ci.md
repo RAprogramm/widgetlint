@@ -12,11 +12,23 @@ work only starts when the cheap work is green.
 
 | Stage | Jobs | Purpose |
 |---|---|---|
+| 0. Change detection | `changes` | classifies the diff so untouched stages are skipped |
 | 1. Instant feedback | `fmt`, `compliance`, `supply-chain` | formatting, license, workflow linting and dependency policy — no workspace compilation |
 | 2. Shared build | `clippy`, `msrv`, `docs` | the first full compilation; warms the `rust-cache` that the later stages restore |
 | 3. Heavy verification | `test`, `coverage`, `zlib-parity`, `benchmarks`, `pages` | the test matrix, the coverage gate, the size parity oracle, the benchmarks and the playground build |
 | 4. Release build | `release-build` | the optimized workspace build, once everything else is green |
 | 5. Release pipeline | `version-bump`, `release-gate`, `build-release`, `create-release` | version bump, tag, per-platform binaries, provenance attestation and the GitHub Release — `main` only |
+
+The `changes` job classifies the diff with `dorny/paths-filter`: `rust`
+(sources, manifests, ruleset, tooling), `playground` and `deny` (dependency
+policy). A docs-only change skips every compilation job; the release jobs
+treat "nothing that ran failed" as green, so a skipped job never blocks a
+release and never fakes one. `workflow_dispatch` runs everything.
+
+External services never redden the pipeline: the Codecov uploads and the
+CodSpeed run are `continue-on-error`, so an outage shows up in the step log
+but does not fail the job. The local gates — the 95% coverage threshold, the
+benchmark build — stay hard.
 
 The `pages` and `pages-deploy` jobs replace the former standalone Pages
 workflow: the playground is built and published by the same run that verifies
@@ -49,6 +61,16 @@ The repository is public, so only Codecov needs a stored credential:
 | Codecov, coverage and test results | the `CODECOV_TOKEN` repository secret |
 | CodSpeed, benchmarks | OIDC (`id-token: write`) |
 | GitHub Pages, releases, attestations | the built-in `GITHUB_TOKEN` |
+
+`CODECOV_TOKEN` is the repository upload token from the Codecov settings.
+Both upload steps pass it with `fail_ci_if_error: true` and
+`continue-on-error: true`: a rejected or failed upload is visible in the step
+log but never reddens the pipeline.
+
+The only optional secret is `CARGO_REGISTRY_TOKEN`, needed once the crates
+are published to [crates.io](https://crates.io); the current release pipeline
+builds binaries and creates the GitHub Release without publishing to a
+registry.
 
 Each job declares the permissions it needs, so the repository setting
 *Settings → Actions → General → Workflow permissions* may stay at its default
@@ -111,9 +133,8 @@ and covers the released version only.
 
 The pipeline declares its own token permissions per job, so the repository
 setting *Settings → Actions → General → Workflow permissions* may stay at its
-default value. The workflow needs no repository secret: the public repository
-authenticates every service through OpenID Connect, as
-[SECRETS_SETUP.md](../SECRETS_SETUP.md) explains.
+default value. The only required repository secret is `CODECOV_TOKEN`, as the
+Authentication section above explains.
 
 ## Local reproduction
 
