@@ -8,6 +8,17 @@ All notable changes to widgetlint will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2026-11-16
+
+### Bug Fixes
+
+- Generate the nextest junit report through the default profile ([21753e5](https://github.com/RAprogramm/widgetlint/commit/21753e5c38d92b18ff20973816c08a035fdb3b21))
+
+### CI/CD
+
+- Authenticate codecov uploads with the repository token ([361aa48](https://github.com/RAprogramm/widgetlint/commit/361aa48962b7241247e6f8be448d5d0356e45d04))
+
+
 ## [0.1.1] - 2026-11-16
 
 ### Bug Fixes
