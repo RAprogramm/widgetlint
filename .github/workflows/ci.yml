@@ -548,6 +548,10 @@ jobs:
   build-release:
     name: Build release (${{ matrix.target }})
     needs: [release-gate]
+    # The gate runs through always(), so the implicit success() of this job
+    # would see the path-filter skips upstream of the gate and skip. An
+    # explicit status function breaks that chain check.
+    if: ${{ !cancelled() && needs.release-gate.result == 'success' }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 40
     cache-mode: none
@@ -636,6 +640,10 @@ jobs:
   create-release:
     name: Create GitHub Release
     needs: [release-gate, build-release]
+    if: >-
+      !cancelled() &&
+      needs.release-gate.result == 'success' &&
+      needs.build-release.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     cache-mode: none
